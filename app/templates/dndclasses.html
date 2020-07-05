@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Classes</h1>
+    <div>
+    <h2>Displaying all classes:</h2>
+    {% if allclasses %}
+    <table>
+        <tr><th>Class</th><th>Hit die</th><th>Saving throw proficiencies</th><th>Armor & weapon proficiencies</th></tr>
+        {% for classname in allclasses.keys() %}
+        <tr>
+            <td>{{ classname }}</td><td>{{ allclasses[classname][0] }}</td>
+            <td>{{ allclasses[classname][1] }}</td><td>{{ allclasses[classname][2] }}</td> 
+        </tr> 
+        {% endfor %}
+    </table> 
+    {% endif %}
+    </div>
+{% endblock %}

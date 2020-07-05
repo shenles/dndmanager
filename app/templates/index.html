@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hi, {{ current_user.username }}!</h1>
+    <div>
+    <h2>You have the following characters:</h2>
+    {% for character in characters %}
+        {% if character.player.id == current_user.id %}
+            <p>{{ character.name }}</p> 
+        {% endif %}
+    {% endfor %}
+    </div>
+{% endblock %}

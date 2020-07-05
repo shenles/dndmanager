@@ -1,0 +1,12 @@
+__pycache__/
+app/__pycache__/
+app.db
+migrations/
+.env
+.venv
+.flaskenv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
