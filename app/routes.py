@@ -4,9 +4,7 @@ from app import app, db, cache
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm 
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character
-import requests
-import json
+from app.models import User, Character, Dndclass, Dndspell
 
 @app.route('/')
 @app.route('/index')
@@ -55,23 +53,13 @@ def logout():
 
 @app.route('/dndclasses')
 @login_required
-@cache.cached(timeout=300)
 def dndclasses():
-    url = 'https://www.dnd5eapi.co/api/classes'
-    r = requests.get(url).content
-    rj = json.loads(r) # json to python dict 
-    allclassesinfo = {}
-    for item in rj["results"]:
-        currclassinfo = [] 
-        currname = item["name"] # e.g. "Bard"
-        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/classes/bard" 
-        curr_r = requests.get(currurl).content 
-        curr_rj = json.loads(curr_r)
-        currhitdie = curr_rj["hit_die"]
-        currsaves = [savingthrow["name"] for savingthrow in curr_rj["saving_throws"]] # e.g. ["DEX", "CHA"] 
-        currprofs = [armorweapon["name"] for armorweapon in curr_rj["proficiencies"]]
-        currclassinfo.append(currhitdie)
-        currclassinfo.append(currsaves)
-        currclassinfo.append(currprofs) 
-        allclassesinfo[currname] = currclassinfo 
-    return render_template('dndclasses.html', title='D&D Classes', allclasses=allclassesinfo)
+    ddclasses = Dndclass.query.all() 
+    return render_template('dndclasses.html', title='D&D Classes', allclasses=ddclasses)
+
+@app.route('/spells')
+@login_required
+@cache.cached(timeout=300)
+def spells():
+    ddspells = Dndspell.query.all()
+    return render_template('spells.html', title='D&D Spells', allspells=ddspells)  

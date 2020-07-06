@@ -66,6 +66,28 @@ class Character(db.Model):
     def __repr__(self):
         return '<Character {}>'.format(self.name)
 
+class Dndclass(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+    hitdie = db.Column(db.Integer)
+    saveprofs = db.Column(db.String(64)) 
+    armweapprofs = db.Column(db.String(800))
+    profchoices = db.Column(db.String(3200))
+    subclasses = db.Column(db.String(320)) 
+    startequip = db.Column(db.String(120)) # e.g. "/api/starting-equipment/2" 
+    spellcastclass = db.Column(db.String(64))
+    pageurl = db.Column(db.String(120)) # e.g. "/api/classes/wizard" 
+
+    def __repr__(self):
+        return '<Dndclass {}>'.format(self.name)
+
+class Dndspell(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+
+    def __repr__(self):
+        return '<Dndspell {}>'.format(self.name)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

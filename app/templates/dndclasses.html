@@ -7,10 +7,10 @@
     {% if allclasses %}
     <table>
         <tr><th>Class</th><th>Hit die</th><th>Saving throw proficiencies</th><th>Armor & weapon proficiencies</th></tr>
-        {% for classname in allclasses.keys() %}
+        {% for classname in allclasses %}
         <tr>
-            <td>{{ classname }}</td><td>{{ allclasses[classname][0] }}</td>
-            <td>{{ allclasses[classname][1] }}</td><td>{{ allclasses[classname][2] }}</td> 
+            <td>{{ classname.name }}</td><td>{{ classname.hitdie }}</td>
+            <td>{{ classname.saveprofs }}</td><td>{{ classname.armweapprofs }}</td> 
         </tr> 
         {% endfor %}
     </table> 
