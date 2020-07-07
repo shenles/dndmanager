@@ -34,20 +34,31 @@ def populateSpells():
     url = 'https://www.dnd5eapi.co/api/spells'
     r = requests.get(url).content
     rj = json.loads(r)
-    allspellsinfo = {}
     for item in rj["results"]:
         currname = item["name"] # e.g. "Acid Arrow"
         currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/spells/acid-arrow"
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
-        allspellsinfo[currname] = [curr_rj["level"]]
-        allspellsinfo[currname].append(curr_rj["school"]["name"]) # e.g. "Evocation"
-        allspellsinfo[currname].append(curr_rj["casting_time"]) # e.g. "1 action"
-        allspellsinfo[currname].append(curr_rj["range"]) # e.g. "90 feet"
-        allspellsinfo[currname].append(curr_rj["duration"]) # e.g. "Instantaneous"
+        currlvl = curr_rj["level"]
+        currschool = curr_rj["school"]["name"] # e.g. "Evocation"
+        currcasttime = curr_rj["casting_time"] # e.g. "1 action"
+        curr_range = curr_rj["range"] # e.g. "90 feet"
+        currduration = curr_rj["duration"] # e.g. "Instantaneous"
         currclasses = [spclass["name"] for spclass in curr_rj["classes"]]
-        allspellsinfo[currname].append(currclasses)
-        allspellsinfo[currname].append(curr_rj["desc"])
+        currclass_str = ", ".join(currclasses) # e.g. "Sorcerer, Wizard" 
+        currcomps = ", ".join(curr_rj["components"]) # e.g. "V, S, M" 
+        currmat = ""
+        if "material" in curr_rj:
+            currmat = curr_rj["material"] # e.g. "A sprig of mistletoe." 
+        curr_ritual = curr_rj["ritual"]
+        currconc = curr_rj["concentration"]
+        currhigher = ""
+        if "higher_level" in curr_rj:
+            currhigher = " ".join(curr_rj["higher_level"]) 
+        currdescrip = " ".join(curr_rj["desc"])
+        newdndspell = Dndspell(name=currname, level=currlvl, school=currschool, casttime=currcasttime, range=curr_range, duration=currduration, casters=currclass_str, components=currcomps, material=currmat, ritual=curr_ritual, concentration=currconc, higherlvl=currhigher, description=currdescrip)
+        db.session.add(newdndspell)
+    db.session.commit()
 
 #populateClasses() # done already, do not run again 
-#populateSpells()
+#populateSpells() # done

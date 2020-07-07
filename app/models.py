@@ -84,6 +84,18 @@ class Dndclass(db.Model):
 class Dndspell(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), index=True, unique=True)
+    level = db.Column(db.Integer)    
+    school = db.Column(db.String(64))
+    casttime = db.Column(db.String(64))
+    range = db.Column(db.String(64))
+    duration = db.Column(db.String(64))
+    casters = db.Column(db.String(320)) 
+    components = db.Column(db.String(64))
+    material = db.Column(db.String(640))
+    ritual = db.Column(db.String(12)) 
+    concentration = db.Column(db.String(12))
+    higherlvl = db.Column(db.String(640))
+    description = db.Column(db.String(9600))   
 
     def __repr__(self):
         return '<Dndspell {}>'.format(self.name)

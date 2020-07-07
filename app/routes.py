@@ -1,6 +1,6 @@
 from flask import request, render_template, flash, redirect, url_for
 from werkzeug.urls import url_parse
-from app import app, db, cache
+from app import app, db
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm 
 from flask_login import current_user, login_user, logout_user
@@ -54,12 +54,18 @@ def logout():
 @app.route('/dndclasses')
 @login_required
 def dndclasses():
+    if not current_user:
+        return render_template('dndclasses.html', title='Classes')
     ddclasses = Dndclass.query.all() 
     return render_template('dndclasses.html', title='D&D Classes', allclasses=ddclasses)
 
-@app.route('/spells')
+@app.route('/dndspells', methods=['GET', 'POST'])
 @login_required
-@cache.cached(timeout=300)
-def spells():
+def dndspells():
+    if not current_user:   
+        return render_template('dndspells.html', title='Spells')
+    form = SpellFilterForm()
+    if form.validate_on_submit():
+        desiredspells = Dndspell.query.filter_by(school=form.school.data)
     ddspells = Dndspell.query.all()
-    return render_template('spells.html', title='D&D Spells', allspells=ddspells)  
+    return render_template('dndspells.html', title='D&D Spells', allspells=ddspells)
