@@ -2,9 +2,13 @@ from flask import request, render_template, flash, redirect, url_for
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm 
+from app.forms import LoginForm, RegistrationForm, SpellFilterForm 
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell
+
+def intersection(l1, l2):
+    l3 = [val for val in l1 if val in l2]
+    return l3
 
 @app.route('/')
 @app.route('/index')
@@ -66,6 +70,45 @@ def dndspells():
         return render_template('dndspells.html', title='Spells')
     form = SpellFilterForm()
     if form.validate_on_submit():
-        desiredspells = Dndspell.query.filter_by(school=form.school.data)
+        level_ints = [int(l) for l in form.level_list.data] 
+        desired_levels = Dndspell.query.filter(Dndspell.level.in_(level_ints)).all() 
+        desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data)).all()
+        desired_class = Dndspell.query.filter(Dndspell.casters.contains(form.class_list.data)) 
+
+        desired_levels_list = list(desired_levels)
+        desired_schools_list = list(desired_schools)
+        desired_class_list = list(desired_class)
+
+        if len(desired_levels_list) > 0 and (len(desired_schools_list) > 0 and len(desired_class_list) > 0):
+            desired_spells = intersection(desired_levels_list, desired_class_list)
+            desired_spells = intersection(desired_spells, desired_schools_list)
+        elif len(desired_levels_list) == 0 and (len(desired_schools_list) > 0 and len(desired_class_list) > 0):
+            desired_spells = intersection(desired_schools_list, desired_class_list) 
+        elif len(desired_levels_list) > 0 and (len(desired_schools_list) == 0 and len(desired_class_list) > 0):
+            desired_spells = intersection(desired_levels_list, desired_class_list)
+        elif len(desired_levels_list) > 0 and (len(desired_schools_list) > 0 and len(desired_class_list) == 0):
+            desired_spells = intersection(desired_levels_list, desired_schools_list)
+        elif len(desired_levels_list) == 0 and (len(desired_schools_list) == 0 and len(desired_class_list) > 0):
+            desired_spells = desired_class_list
+        elif len(desired_levels_list) == 0 and (len(desired_schools_list) > 0 and len(desired_class_list) == 0):
+            desired_spells = desired_schools_list
+        else:
+            desired_spells = []
+
+        return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_spells)  
+
+    else:
+        if form.is_submitted():
+            level_ints = [int(l) for l in form.level_list.data]
+            if len(level_ints) > 0:
+                desired_levels = Dndspell.query.filter(Dndspell.level.in_(level_ints)).all()
+                return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_levels)
+            elif len(list(form.school_list.data)) > 0:
+                desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data)).all()
+                return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_schools) 
+            else:
+                ddspells = Dndspell.query.all()
+                return render_template('dndspells.html', title='Spells', form=form, allspells=ddspells)
+
     ddspells = Dndspell.query.all()
-    return render_template('dndspells.html', title='D&D Spells', allspells=ddspells)
+    return render_template('dndspells.html', title='Spells', form=form, allspells=ddspells)

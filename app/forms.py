@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import widgets, RadioField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from app.models import User
+from app.models import User, SpellLevel, SpellClass, SpellSchool
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -26,5 +26,21 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Please use a different email address.')
 
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 class SpellFilterForm(FlaskForm):
+    spell_levels = SpellLevel.query.with_entities(SpellLevel.level).all()
+    spell_classes = SpellClass.query.with_entities(SpellClass.name).all()
+    spell_schools = SpellSchool.query.with_entities(SpellSchool.name).all() 
+    lvl_choices = [x[0] for x in spell_levels]
+    class_choices = [x[0] for x in spell_classes]
+    school_choices = [x[0] for x in spell_schools] 
+    level_list = MultiCheckboxField('Level', choices=[(str(l), l) for l in lvl_choices])
+    class_list = RadioField('Class', choices=[(c, c) for c in class_choices])
+    school_list = MultiCheckboxField('School', choices=[(s, s) for s in school_choices])
     submit = SubmitField('Filter spells')
+
+class EquipFilterForm(FlaskForm):
+    submit = SubmitField('Filter equipment')

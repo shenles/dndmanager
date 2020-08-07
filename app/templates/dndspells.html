@@ -4,6 +4,15 @@
     <h1>D&D Spells</h1>
     <div>
     <h2>Filter spells:</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ form.level_list }}
+        {{ form.class_list }}
+        {{ form.school_list }} 
+        <button type="submit">Submit</button>
+    </form>    
+    </div>
+    <div>
     <h3>Displaying spells:</h3>
     </div>
     <div>
@@ -20,6 +29,20 @@
         </tr> 
         {% endfor %}
     </table> 
+    {% endif %}
+    {% if selected_spells %}
+    <table>
+        <tr><th>Name</th><th>Level</th><th>School</th><th>Casting time</th><th>Range</th>
+            <th>Duration</th><th>Classes</th><th>Description</th></tr>
+        {% for spellname in selected_spells %}
+        <tr>
+            <td>{{ spellname.name }}</td><td>{{ spellname.level }}</td>
+            <td>{{ spellname.school }}</td><td>{{ spellname.casttime }}</td>
+            <td>{{ spellname.range }}</td><td>{{ spellname.duration }}</td>
+            <td>{{ spellname.casters }}</td><td>{{ spellname.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
     {% endif %}
     </div>
 {% endblock %}

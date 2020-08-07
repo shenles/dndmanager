@@ -100,6 +100,27 @@ class Dndspell(db.Model):
     def __repr__(self):
         return '<Dndspell {}>'.format(self.name)
 
+class SpellLevel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    level = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<SpellLevel {}>'.format(self.level)
+
+class SpellClass(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+
+    def __repr__(self):
+        return '<SpellClass {}>'.format(self.name)
+
+class SpellSchool(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+
+    def __repr__(self):
+        return '<SpellSchool {}>'.format(self.name)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

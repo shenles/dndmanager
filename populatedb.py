@@ -62,3 +62,5 @@ def populateSpells():
 
 #populateClasses() # done already, do not run again 
 #populateSpells() # done
+#populateRaces() #todo
+#populateEquipment() #todo
