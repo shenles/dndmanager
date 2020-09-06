@@ -121,6 +121,34 @@ class SpellSchool(db.Model):
     def __repr__(self):
         return '<SpellSchool {}>'.format(self.name)
 
+class Dndrace(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True) 
+    speed = db.Column(db.Integer)
+    size = db.Column(db.String(32))
+    sizedescrip = db.Column(db.String(640))
+    age = db.Column(db.String(640))
+    abilitybonuses = db.Column(db.String(500))
+    bonusoptions = db.Column(db.String(900))
+    numbonuschoices = db.Column(db.Integer)
+    startingprofs = db.Column(db.String(800))
+    startprofoptions = db.Column(db.String(900))
+    numprofchoices = db.Column(db.Integer) 
+    numlangchoices = db.Column(db.Integer)
+    languages = db.Column(db.String(320))
+    langoptions = db.Column(db.String(640))
+    langdescrip = db.Column(db.String(640))
+    traits = db.Column(db.String(3200))
+    traiturls = db.Column(db.String(3200)) # e.g. "/api/traits/fey-ancestry
+    traitoptions = db.Column(db.String(900))
+    numtraitchoices = db.Column(db.Integer)
+    subraces = db.Column(db.String(320))
+    subraceurls = db.Column(db.String(900)) # e.g. "/api/subraces/high-elf
+    pageurl = db.Column(db.String(120)) # e.g. "/api/races/elf"
+
+    def __repr__(self):
+        return '<Dndrace {}>'.format(self.name)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

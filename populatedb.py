@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import Dndclass, Dndspell
+from app.models import Dndclass, Dndspell, Dndrace
 import requests
 import json
 
@@ -60,7 +60,70 @@ def populateSpells():
         db.session.add(newdndspell)
     db.session.commit()
 
+# pull races info from API to populate Dndrace table
+def populateRaces():
+    url = 'https://www.dnd5eapi.co/api/races'
+    r = requests.get(url).content
+    rj = json.loads(r)
+    for item in rj["results"]:
+        currname = item["name"] # e.g. "Human"
+        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/races/human"
+        curr_r = requests.get(currurl).content
+        curr_rj = json.loads(curr_r)
+        currspeed = curr_rj["speed"] # e.g. 30
+        currabilitybonuses = [x["name"] for x in curr_rj["ability_bonuses"]]  
+        currabilitystr = ", ".join(currabilitybonuses)
+        currabilstr = ", ".join(currabilitybonuses) 
+        bonusoptionlist = []
+        bonuschoices = 0
+        if "ability_bonus_options" in curr_rj:
+            bonusoptionlist = [b["name"] for b in curr_rj["ability_bonus_options"]["from"]]
+            bonuschoices = curr_rj["ability_bonus_options"]["choose"] 
+        bonusoptionstr = ", ".join(bonusoptionlist)
+        currage = curr_rj["age"] # e.g. "Humans reach adulthood in their late teens." 
+        currsize = curr_rj["size"]
+        currsizedesc = curr_rj["size_description"]
+        profnames = []
+        if len(curr_rj["starting_proficiencies"]) > 0:
+            profnames = [p["name"] for p in curr_rj["starting_proficiencies"]] # e.g. "Handaxes" 
+        profnamestr = ", ".join(profnames)
+        profoptions = [] 
+        profchoices = 0
+        if "starting_proficiency_options" in curr_rj:
+            profchoices = curr_rj["starting_proficiency_options"]["choose"]
+            profoptions = [c["name"] for c in curr_rj["starting_proficiency_options"]["from"]] 
+        profoptionstr = ", ".join(profoptions)
+        langs = [l["name"] for l in curr_rj["languages"]] 
+        langstr = ", ".join(langs)
+        langdesc = curr_rj["language_desc"]
+        langoptionlist = []
+        langchoices = 0
+        if "language_options" in curr_rj:
+            langchoices = curr_rj["language_options"]["choose"]
+            langoptionlist = [l["name"] for l in curr_rj["language_options"]["from"]] 
+        langoptionstr = ", ".join(langoptionlist)
+        traitlist = [t["name"] for t in curr_rj["traits"]] 
+        traiturllist = [t["url"] for t in curr_rj["traits"]]
+        traitoptionlist = []
+        traitchoices = 0
+        if "trait_options" in curr_rj:
+            traitchoices = curr_rj["trait_options"]["choose"] 
+            traitoptionlist = [t["name"] for t in curr_rj["trait_options"]["from"]] 
+        subracelist = [] 
+        subraceurllist = []
+        if "subraces" in curr_rj:
+            subracelist = [s["name"] for s in curr_rj["subraces"]]
+            subraceurllist = [s["url"] for s in curr_rj["subraces"]] 
+        traitstr = ", ".join(traitlist)
+        traiturlstr = ", ".join(traiturllist)
+        traitoptionstr = ", ".join(traitoptionlist)
+        subracestr = ", ".join(subracelist)
+        subraceurlstr = ", ".join(subraceurllist)
+        newdndrace = Dndrace(name=currname, pageurl=currurl, speed=currspeed, size=currsize, sizedescrip=currsizedesc, age=currage, abilitybonuses=currabilitystr, bonusoptions=bonusoptionstr, numbonuschoices=bonuschoices, startingprofs=profnamestr, startprofoptions=profoptionstr, numprofchoices=profchoices, languages=langstr, langoptions=langoptionstr, numlangchoices=langchoices, langdescrip=langdesc, traits=traitstr, traiturls=traiturlstr, traitoptions=traitoptionstr, numtraitchoices=traitchoices, subraces=subracestr, subraceurls=subraceurlstr)
+        db.session.add(newdndrace) 
+    db.session.commit()
+
 #populateClasses() # done already, do not run again 
 #populateSpells() # done
-#populateRaces() #todo
+#populateRaces() #done
 #populateEquipment() #todo

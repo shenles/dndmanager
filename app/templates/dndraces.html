@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Races</h1>
+    <div>
+    <h2>Displaying all races:</h2>
+    {% if allraces %}
+    <table>
+        <tr><th>Race</th><th>Speed</th><th>Size</th>
+        <th>Ability bonuses</th><th>Additional bonuses (choose from options)</th><th>Ability bonus options</th>
+        <th>Starting proficiencies</th>
+        <th>Additional proficiencies (choose from options)</th><th>Proficiency options</th>        
+        <th>Languages known</th><th>Additional languages (choose from options)</th><th>Language options</th>
+        <th>Traits</th><th>Additional traits (choose from options)</th><th>Trait options</th>
+        <th>Subraces</th> 
+        </tr> 
+        {% for racename in allraces %}
+        <tr>
+            <td>{{ racename.name }}</td><td>{{ racename.speed }}</td><td>{{ racename.size }}</td>
+            <td>{{ racename.abilitybonuses }}</td><td>{{ racename.numbonuschoices  }}</td>
+            <td>{{ racename.bonusoptions  }}</td><td>{{ racename.startingprofs }}</td>
+            <td>{{ racename.numprofchoices }}</td><td>{{ racename.startprofoptions  }}</td>
+            <td>{{ racename.languages }}</td><td>{{ racename.numlangchoices }}</td><td>{{ racename.langoptions }}</td>
+            <td>{{ racename.traits }}</td><td>{{ racename.numtraitchoices }}</td><td>{{ racename.traitoptions }}</td>
+            <td>{{ racename.subraces }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+{% endblock %}

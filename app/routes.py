@@ -4,7 +4,7 @@ from app import app, db
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, SpellFilterForm 
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell
+from app.models import User, Character, Dndclass, Dndspell, Dndrace
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -62,6 +62,14 @@ def dndclasses():
         return render_template('dndclasses.html', title='Classes')
     ddclasses = Dndclass.query.all() 
     return render_template('dndclasses.html', title='D&D Classes', allclasses=ddclasses)
+
+@app.route('/dndraces')
+@login_required
+def dndraces():
+    if not current_user:
+        return render_template('dndraces.html', title='Races')
+    ddraces = Dndrace.query.all()
+    return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
 
 @app.route('/dndspells', methods=['GET', 'POST'])
 @login_required
