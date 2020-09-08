@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Equipment</h1>
+    <div>
+    {% if allequip %}
+    <table>
+        <tr><th>Name</th><th>Category</th><th>Subcategory</th>
+        <th>Cost</th><th>Weight</th><th>Description</th>
+        </tr> 
+        {% for equip in allequip %}
+        <tr>
+            <td>{{ equip.name }}</td><td>{{ equip.maincategory }}</td><td>{{ equip.secondcategory }}</td>
+            <td>{{ equip.cost }}</td><td>{{ equip.weight }}</td><td>{{ equip.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+    <div>
+    {% if selectedequip %}
+    <table>
+        <tr><th>Name</th><th>Category</th><th>Subcategory</th>
+        <th>Cost</th><th>Weight</th><th>Description</th>
+        </tr>
+        {% for equip in selectedequip %}
+        <tr>
+            <td>{{ equip.name }}</td><td>{{ equip.maincategory }}</td><td>{{ equip.secondcategory }}</td>
+            <td>{{ equip.cost }}</td><td>{{ equip.weight }}</td><td>{{ equip.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+{% endblock %}

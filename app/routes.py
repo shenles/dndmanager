@@ -4,7 +4,7 @@ from app import app, db
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, SpellFilterForm 
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndequipment
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -70,6 +70,22 @@ def dndraces():
         return render_template('dndraces.html', title='Races')
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
+
+@app.route('/dndequipment')
+@login_required
+def dndequipment():
+    if not current_user:
+        return render_template('dndequipment.html', title='Equipment')
+    ddequip = Dndequipment.query.filter(Dndequipment.maincategory.notin_(['Weapon', 'Armor']))
+    return render_template('dndequipment.html', title='D&D Equipment', allequip=ddequip)
+
+@app.route('/dndweaponsarmor')
+@login_required
+def dndweaponsarmor():
+    if not current_user:
+        return render_template('dndweaponsarmor.html', title='Weapons & Armor')
+    ddequip = Dndequipment.query.filter(Dndequipment.maincategory.in_(['Weapon', 'Armor']))
+    return render_template('dndweaponsarmor.html', title='D&D Weapons & Armor', allequip=ddequip)
 
 @app.route('/dndspells', methods=['GET', 'POST'])
 @login_required

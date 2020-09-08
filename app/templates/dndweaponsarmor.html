@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Weapons & Armor</h1>
+    <div>
+    {% if allequip %}
+    <table>
+        <tr><th>Name</th><th>Category</th><th>Subcategory</th>
+        <th>Cost</th><th>Weight</th>
+        <th>Damage dice</th><th>Damage type</th>
+        <th>Normal range</th><th>Long range</th><th>Properties</th>
+        <th>Base AC</th><th>Dexterity bonus</th><th>Max bonus possible</th>
+        <th>Min strength requirement</th><th>Stealth disadvantage</th>
+        </tr> 
+        {% for equip in allequip %}
+        <tr>
+            <td>{{ equip.name }}</td><td>{{ equip.maincategory }}</td><td>{{ equip.secondcategory }}</td>
+            <td>{{ equip.cost }}</td><td>{{ equip.weight }}</td>
+            <td>{{ equip.damagedice }}</td><td>{{ equip.damagetype }}</td>
+            <td>{{ equip.normrange }}</td><td>{{ equip.longrange }}</td><td>{{ equip.properties }}</td>
+            <td>{{ equip.base_ac }}</td><td>{{ equip.dexteritybonus }}</td><td>{{ equip.maximumbonus }}</td>
+            <td>{{ equip.minimumstrength }}</td><td>{{ equip.disadvantage }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+    <div>
+    {% if selectedequip %}
+    <table>
+        <tr><th>Name</th><th>Category</th><th>Subcategory</th>
+        <th>Cost</th><th>Weight</th>
+        <th>Damage dice</th><th>Damage type</th>
+        <th>Normal range</th><th>Long range</th><th>Properties</th>
+        <th>Base AC</th><th>Dexterity bonus</th><th>Max bonus possible</th>
+        <th>Min strength requirement</th><th>Stealth disadvantage</th>
+        </tr>
+        {% for equip in selectedequip %}
+        <tr>
+            <td>{{ equip.name }}</td><td>{{ equip.maincategory }}</td><td>{{ equip.secondcategory }}</td>
+            <td>{{ equip.cost }}</td><td>{{ equip.weight }}</td>
+            <td>{{ equip.damagedice }}</td><td>{{ equip.damagetype }}</td>
+            <td>{{ equip.normrange }}</td><td>{{ equip.longrange }}</td><td>{{ equip.properties }}</td>
+            <td>{{ equip.base_ac }}</td><td>{{ equip.dexteritybonus }}</td><td>{{ equip.maximumbonus }}</td>
+            <td>{{ equip.minimumstrength }}</td><td>{{ equip.disadvantage }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+{% endblock %}
