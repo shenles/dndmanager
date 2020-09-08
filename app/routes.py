@@ -2,7 +2,7 @@ from flask import request, render_template, flash, redirect, url_for
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, SpellFilterForm, EquipFilterForm 
+from app.forms import LoginForm, RegistrationForm, SpellFilterForm, EquipFilterForm, WeaponArmorFilterForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndequipment
 
@@ -90,13 +90,28 @@ def dndequipment():
     ddequip = Dndequipment.query.filter(Dndequipment.maincategory.notin_(['Weapon', 'Armor']))
     return render_template('dndequipment.html', title='D&D Equipment', form=form, allequip=ddequip)
 
-@app.route('/dndweaponsarmor')
+@app.route('/dndweaponsarmor', methods=['GET', 'POST'])
 @login_required
 def dndweaponsarmor():
     if not current_user:
         return render_template('dndweaponsarmor.html', title='Weapons & Armor')
+    form = WeaponArmorFilterForm()
+    if form.is_submitted():
+        selected_radio = form.category_list.data
+        if "Weapon" in selected_radio and "All" in selected_radio: # e.g. "All Weapons"
+            desired_equip = Dndequipment.query.filter(Dndequipment.maincategory.contains("Weapon"))
+        elif "Weapon" in selected_radio: # e.g. "Melee Weapons" or "Monk Weapons"
+            search_list = selected_radio.split()
+            search_string = search_list[0] # e.g. "Melee"
+            if search_string in ['Simple', 'Martial', 'Melee', 'Ranged']:
+                desired_equip = Dndequipment.query.filter(Dndequipment.secondcategory.contains(search_string))
+            else:
+                desired_equip = Dndequipment.query.filter(Dndequipment.properties.contains(search_string))
+        else:
+            desired_equip = Dndequipment.query.filter(Dndequipment.maincategory.contains("Armor"))
+        return render_template('dndweaponsarmor.html', title='D&D Weapons & Armor', form=form, selectedequip=desired_equip)
     ddequip = Dndequipment.query.filter(Dndequipment.maincategory.in_(['Weapon', 'Armor']))
-    return render_template('dndweaponsarmor.html', title='D&D Weapons & Armor', allequip=ddequip)
+    return render_template('dndweaponsarmor.html', title='D&D Weapons & Armor', form=form, allequip=ddequip)
 
 @app.route('/dndspells', methods=['GET', 'POST'])
 @login_required

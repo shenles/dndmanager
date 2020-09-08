@@ -46,3 +46,8 @@ class EquipFilterForm(FlaskForm):
     equip_categories = ['All Adventuring Gear', 'All Tools', 'All Mounts and Vehicles', 'Artisan\'s Tools', 'Equipment Packs', 'Kits', 'Musical Instrument', 'Gaming Sets', 'Druidic Foci', 'Holy Symbols', 'Standard Gear', 'Ammunition'] 
     category_list = RadioField('Category/Subcategory', choices=equip_categories) 
     submit = SubmitField('Filter equipment')
+
+class WeaponArmorFilterForm(FlaskForm):
+    weaponarmor_categories = ['All Weapons', 'All Armor', 'Simple Weapons', 'Martial Weapons', 'Melee Weapons', 'Ranged Weapons', 'Two-Handed Weapons', 'Thrown Weapons', 'Monk Weapons'] 
+    category_list = RadioField('Category', choices=weaponarmor_categories) 
+    submit = SubmitField('Filter weapons & armor')
