@@ -149,6 +149,26 @@ class Dndrace(db.Model):
     def __repr__(self):
         return '<Dndrace {}>'.format(self.name)
 
+class Dndequipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+    cost = db.Column(db.String(32))
+    weight = db.Column(db.Integer)
+    description = db.Column(db.String(3200))
+    properties = db.Column(db.String(3200))
+    propertyurls = db.Column(db.String(3200))
+    maincategory = db.Column(db.String(120))
+    secondcategory = db.Column(db.String(120))
+    damagetype = db.Column(db.String(32))
+    damagedice = db.Column(db.String(32))
+    base_ac = db.Column(db.Integer)     
+    dexteritybonus = db.Column(db.String(32)) 
+    maximumbonus = db.Column(db.String(32))
+    minimumstrength = db.Column(db.Integer)
+    disadvantage = db.Column(db.String(32))
+    normrange = db.Column(db.Integer)
+    longrange = db.Column(db.Integer)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
