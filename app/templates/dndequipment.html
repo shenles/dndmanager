@@ -3,6 +3,14 @@
 {% block content %}
     <h1>D&D Equipment</h1>
     <div>
+    <h2>Filter equipment:</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ form.category_list }}
+        <button type="submit">Submit</button>
+    </form>
+    </div>
+    <div>
     {% if allequip %}
     <table>
         <tr><th>Name</th><th>Category</th><th>Subcategory</th>

@@ -2,7 +2,7 @@ from flask import request, render_template, flash, redirect, url_for
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, SpellFilterForm 
+from app.forms import LoginForm, RegistrationForm, SpellFilterForm, EquipFilterForm 
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndequipment
 
@@ -71,13 +71,24 @@ def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
 
-@app.route('/dndequipment')
+@app.route('/dndequipment', methods=['GET', 'POST'])
 @login_required
 def dndequipment():
     if not current_user:
         return render_template('dndequipment.html', title='Equipment')
+    form = EquipFilterForm()
+    if form.is_submitted():
+        selected_radio = form.category_list.data
+        if "All" in selected_radio: # e.g. "All Adventuring Gear" 
+            search_string = selected_radio[4:]
+            desired_equipment = Dndequipment.query.filter(Dndequipment.maincategory.contains(search_string))
+        else:
+            # e.g. "Ammunition"
+            desired_equipment = Dndequipment.query.filter(Dndequipment.secondcategory.contains(selected_radio))
+        return render_template('dndequipment.html', title='D&D Equipment', form=form, selectedequip=desired_equipment)
+
     ddequip = Dndequipment.query.filter(Dndequipment.maincategory.notin_(['Weapon', 'Armor']))
-    return render_template('dndequipment.html', title='D&D Equipment', allequip=ddequip)
+    return render_template('dndequipment.html', title='D&D Equipment', form=form, allequip=ddequip)
 
 @app.route('/dndweaponsarmor')
 @login_required
