@@ -37,7 +37,7 @@ class SpellFilterForm(FlaskForm):
     lvl_choices = [x[0] for x in spell_levels]
     class_choices = [x[0] for x in spell_classes]
     school_choices = [x[0] for x in spell_schools] 
-    level_list = MultiCheckboxField('Level', choices=[(str(l), l) for l in lvl_choices])
+    level_list = RadioField('Level', choices=[(str(l), l) for l in lvl_choices])
     class_list = RadioField('Class', choices=[(c, c) for c in class_choices])
     school_list = MultiCheckboxField('School', choices=[(s, s) for s in school_choices])
     submit = SubmitField('Filter spells')

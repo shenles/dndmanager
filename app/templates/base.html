@@ -16,10 +16,10 @@
             <a href="{{ url_for('logout') }}">Logout</a>
             {% endif %}
             <a href="{{ url_for('dndclasses') }}">Classes</a>
-            <a href="{{ url_for('dndspells') }}">Spells</a>
             <a href="{{ url_for('dndraces') }}">Races</a>
             <a href="{{ url_for('dndweaponsarmor') }}">Weapons & Armor</a>
             <a href="{{ url_for('dndequipment') }}">Other Equipment</a>
+            <a href="{{ url_for('dndspells') }}">Spells</a>
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}

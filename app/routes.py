@@ -120,9 +120,9 @@ def dndspells():
         return render_template('dndspells.html', title='Spells')
     form = SpellFilterForm()
     if form.validate_on_submit():
-        level_ints = [int(l) for l in form.level_list.data] 
-        desired_levels = Dndspell.query.filter(Dndspell.level.in_(level_ints)).all() 
-        desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data)).all()
+        level_ints = int(form.level_list.data)
+        desired_levels = Dndspell.query.filter(Dndspell.level.contains(level_ints))
+        desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data))
         desired_class = Dndspell.query.filter(Dndspell.casters.contains(form.class_list.data)) 
 
         desired_levels_list = list(desired_levels)
@@ -145,17 +145,17 @@ def dndspells():
         else:
             desired_spells = []
 
-        return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_spells)  
+        return render_template('dndspells.html', title='Spells', form=form, selected_spells=desired_spells)  
 
     else:
         if form.is_submitted():
-            level_ints = [int(l) for l in form.level_list.data]
-            if len(level_ints) > 0:
-                desired_levels = Dndspell.query.filter(Dndspell.level.in_(level_ints)).all()
-                return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_levels)
+            level_ints = int(form.level_list.data)
+            if level_ints is not None:
+                desired_levels = Dndspell.query.filter(Dndspell.level.contains(level_ints))
+                return render_template('dndspells.html', title='Spells', form=form, selected_spells=desired_levels)
             elif len(list(form.school_list.data)) > 0:
-                desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data)).all()
-                return render_template('dndspells.html', title='Spells', form=form, lvl_data=form.level_list.data, class_data=form.class_list.data, school_data=form.school_list.data, selected_spells=desired_schools) 
+                desired_schools = Dndspell.query.filter(Dndspell.school.in_(form.school_list.data))
+                return render_template('dndspells.html', title='Spells', form=form, selected_spells=desired_schools) 
             else:
                 ddspells = Dndspell.query.all()
                 return render_template('dndspells.html', title='Spells', form=form, allspells=ddspells)
