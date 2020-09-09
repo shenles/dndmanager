@@ -63,6 +63,13 @@ def dndclasses():
     ddclasses = Dndclass.query.all() 
     return render_template('dndclasses.html', title='D&D Classes', allclasses=ddclasses)
 
+@app.route('/createcharacter')
+@login_required
+def createcharacter():
+    if not current_user:
+        return render_template('createcharacter.html', title='Create Character')
+    return render_template('createcharacter.html', title='Create a D&D Character', message='hello!')
+
 @app.route('/dndraces')
 @login_required
 def dndraces():

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Create a new D&D character</h1>
+    <div>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    </div>
+{% endblock %}
