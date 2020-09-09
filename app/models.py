@@ -23,9 +23,9 @@ class User(UserMixin, db.Model):
 class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), index=True, unique=True)
-    type = db.Column(db.String(12)) # pc or npc 
+    chartype = db.Column(db.String(12)) # pc or npc 
     race = db.Column(db.String(64))
-    dndclass = db.Column(db.String(64))
+    charclass = db.Column(db.String(64))
     level = db.Column(db.Integer)
     alignment = db.Column(db.String(64))
     background = db.Column(db.String(64))
@@ -35,6 +35,7 @@ class Character(db.Model):
     ac = db.Column(db.Integer)
     initiative = db.Column(db.Integer)
     speed = db.Column(db.Integer)
+    size = db.Column(db.String(20))
     hpmax = db.Column(db.Integer)
     abilityscores = db.Column(db.String(320)) # store scores/modifiers as dictionaries
     abilitymods = db.Column(db.String(320))
@@ -72,9 +73,15 @@ class Dndclass(db.Model):
     hitdie = db.Column(db.Integer)
     saveprofs = db.Column(db.String(64)) 
     armweapprofs = db.Column(db.String(800))
+    num_pchoices = db.Column(db.Integer)
+    num_pchoices_two = db.Column(db.Integer)
+    num_pchoices_three = db.Column(db.Integer)
     profchoices = db.Column(db.String(3200))
-    subclasses = db.Column(db.String(320)) 
-    startequip = db.Column(db.String(120)) # e.g. "/api/starting-equipment/2" 
+    profchoices_two = db.Column(db.String(3200))
+    profchoices_three = db.Column(db.String(3200))
+    startequip = db.Column(db.String(320))
+    subclasses = db.Column(db.String(320))
+    classlevels =  db.Column(db.String(320))
     spellcastclass = db.Column(db.String(64))
     pageurl = db.Column(db.String(120)) # e.g. "/api/classes/wizard" 
 
@@ -87,7 +94,7 @@ class Dndspell(db.Model):
     level = db.Column(db.Integer)    
     school = db.Column(db.String(64))
     casttime = db.Column(db.String(64))
-    range = db.Column(db.String(64))
+    sprange = db.Column(db.String(64))
     duration = db.Column(db.String(64))
     casters = db.Column(db.String(320)) 
     components = db.Column(db.String(64))

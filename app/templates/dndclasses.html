@@ -6,11 +6,21 @@
     <h2>Displaying all classes:</h2>
     {% if allclasses %}
     <table>
-        <tr><th>Class</th><th>Hit die</th><th>Saving throw proficiencies</th><th>Armor & weapon proficiencies</th></tr>
+        <tr><th>Class</th><th>Hit die</th><th>Saving throw proficiencies</th><th>Proficiencies</th>
+        <th>Proficiency choices (pick from option set #1)</th>
+        <th>Option set #1</th>
+        <th>Additional choices (pick from set #2)</th>
+        <th>Option set #2</th>
+        <th>Additional choices (pick from set #3)</th>
+        <th>Option set #3</th>
+        </tr>
         {% for classname in allclasses %}
         <tr>
             <td>{{ classname.name }}</td><td>{{ classname.hitdie }}</td>
-            <td>{{ classname.saveprofs }}</td><td>{{ classname.armweapprofs }}</td> 
+            <td>{{ classname.saveprofs }}</td><td>{{ classname.armweapprofs }}</td>
+            <td>{{ classname.num_pchoices }}</td><td>{{ classname.profchoices }}</td>
+            <td>{{ classname.num_pchoices_two }}</td><td>{{ classname.profchoices_two }}</td>
+            <td>{{ classname.num_pchoices_three }}</td><td>{{ classname.profchoices_three }}</td>
         </tr> 
         {% endfor %}
     </table> 

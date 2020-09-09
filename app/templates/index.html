@@ -4,10 +4,27 @@
     <h1>Hi, {{ current_user.username }}!</h1>
     <div>
     <h2>You have the following characters:</h2>
-    {% for character in characters %}
-        {% if character.player.id == current_user.id %}
-            <p>{{ character.name }}</p> 
-        {% endif %}
-    {% endfor %}
+    {% if allchars %}
+    <table>
+        <tr>
+        <th>Name</th><th>Type</th><th>Class</th><th>Level</th><th>Race</th>
+        <th>Alignment</th><th>Proficiency bonus</th><th>AC</th>
+        <th>Initiative</th><th>Speed</th>
+        <th>HP</th><th>Hitdice</th>
+        </tr>
+        {% for currentcharacter in allchars %}
+            {% if currentcharacter.player.id == current_user.id %}
+                <tr>
+                <td>{{ currentcharacter.name }}</td><td>{{ currentcharacter.chartype }}</td>
+                <td>{{ currentcharacter.charclass }}</td><td>{{ currentcharacter.level }}</td>
+                <td>{{ currentcharacter.race }}</td><td>{{ currentcharacter.alignment }}</td>
+                <td>{{ currentcharacter.profbonus }}</td><td>{{ currentcharacter.ac }}</td>
+                <td>{{ currentcharacter.initiative }}</td><td>{{ currentcharacter.speed }}</td>
+                <td>{{ currentcharacter.hpmax }}</td><td>{{ currentcharacter.hitdice }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    {% endif %}
     </div>
 {% endblock %}

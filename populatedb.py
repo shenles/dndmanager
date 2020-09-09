@@ -1,17 +1,17 @@
 from app import app, db
-from app.models import Dndclass, Dndspell, Dndrace, Dndequipment
+from app.models import Dndclass, Dndspell, Dndrace, Dndequipment, SpellLevel, SpellClass, SpellSchool
 import requests
 import json
 
 # pull class info from API to populate Dndclass table 
 def populateClasses():
-    url = 'https://www.dnd5eapi.co/api/classes'
+    url = "https://www.dnd5eapi.co/api/classes"
     r = requests.get(url).content
     rj = json.loads(r) # json to python dict
 
     for item in rj["results"]:
         currname = item["name"] # e.g. "Bard"
-        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/classes/bard"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/classes/bard"
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
         currhitdie = curr_rj["hit_die"]
@@ -19,27 +19,56 @@ def populateClasses():
         currsavesstr = ", ".join(currsaves)
         currprofs = [armorweapon["name"] for armorweapon in curr_rj["proficiencies"]] 
         currprofsstr = ", ".join(currprofs) 
-        currchoices = str(curr_rj["proficiency_choices"])
+        numprof1, numprof2, numprof3 = 0, 0, 0
+        prof1, prof2, prof3 = "", "", ""
+        # retrieve & parse proficiency selection info for current class
+        if "proficiency_choices" in curr_rj:
+            profnums = [x["choose"] for x in curr_rj["proficiency_choices"]]
+            for i in range(len(profnums)):
+                if i + 1 == 1:
+                    numprof1 = max(0, profnums[i])
+                elif i + 1 == 2:
+                    numprof2 = max(0, profnums[i])
+                else:
+                    numprof3 = max(0, profnums[i])
+            counter = 0
+            for choice_set in curr_rj["proficiency_choices"]:
+                counter += 1
+                current_options = choice_set["from"]
+                currlist = [op["name"] for op in current_options]
+                currstr = ", ". join(currlist)
+                if counter == 1:
+                    prof1 = currstr
+                elif counter == 2:
+                    prof2 = currstr
+                else:
+                    prof3 = currstr               
+        
         currsubclass = str(curr_rj["subclasses"])
-        currequip = curr_rj["starting_equipment"]["url"]
+        currequip = curr_rj["starting_equipment"]
+        currclasslevels = curr_rj["class_levels"]
         currspellclass = ""
         if "spellcasting" in curr_rj:
-            currspellclass = curr_rj["spellcasting"]["class"]
+            currspellclass = curr_rj["spellcasting"]
         currpageurl = item["url"]
 
-        newdndclass = Dndclass(name=currname, hitdie=currhitdie, saveprofs=currsavesstr, armweapprofs=currprofsstr, profchoices=currchoices, subclasses=currsubclass, startequip=currequip, spellcastclass=currspellclass, pageurl=currpageurl)
+        newdndclass = Dndclass(name=currname, hitdie=currhitdie, saveprofs=currsavesstr,
+            armweapprofs=currprofsstr, num_pchoices=numprof1, num_pchoices_two=numprof2,
+            num_pchoices_three=numprof3, profchoices=prof1, profchoices_two=prof2,
+            profchoices_three=prof3, subclasses=currsubclass, startequip=currequip,
+            classlevels=currclasslevels, spellcastclass=currspellclass, pageurl=currpageurl)
         db.session.add(newdndclass)
     db.session.commit()
 
 # pull spells info from API to populate Dndspell table
 def populateSpells():
-    url = 'https://www.dnd5eapi.co/api/spells'
+    url = "https://www.dnd5eapi.co/api/spells"
     r = requests.get(url).content
     rj = json.loads(r)
 
     for item in rj["results"]:
         currname = item["name"] # e.g. "Acid Arrow"
-        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/spells/acid-arrow"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/spells/acid-arrow"
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
         currlvl = curr_rj["level"]
@@ -60,9 +89,32 @@ def populateSpells():
             currhigher = " ".join(curr_rj["higher_level"]) 
         currdescrip = " ".join(curr_rj["desc"])
 
-        newdndspell = Dndspell(name=currname, level=currlvl, school=currschool, casttime=currcasttime, range=curr_range, duration=currduration, casters=currclass_str, components=currcomps, material=currmat, ritual=curr_ritual, concentration=currconc, higherlvl=currhigher, description=currdescrip)
+        newdndspell = Dndspell(name=currname, level=currlvl, school=currschool,
+            casttime=currcasttime, sprange=curr_range, duration=currduration,
+            casters=currclass_str, components=currcomps, material=currmat,
+            ritual=curr_ritual, concentration=currconc, higherlvl=currhigher, description=currdescrip)
         db.session.add(newdndspell)
     db.session.commit()
+
+def populateSpellLevels():
+    for currid in range(10):
+        spell_level = SpellLevel(id=currid+1, level=currid)
+        db.session.add(spell_level)
+    db.session.commit()
+
+def populateSpellClasses():
+    caster_classes = ['Bard', 'Cleric', 'Druid', 'Paladin', 'Sorcerer', 'Ranger', 'Warlock', 'Wizard']
+    for currnum in range(len(caster_classes)):
+        spell_class = SpellClass(id=currnum+1, name=caster_classes[currnum])
+        db.session.add(spell_class)
+    db.session.commit()
+
+def populateSpellSchools():
+    magic_schools = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation']
+    for currnum in range(len(magic_schools)):
+        spell_school = SpellSchool(id=currnum+1, name=magic_schools[currnum])
+        db.session.add(spell_school)
+    db.session.commit()   
 
 # pull races info from API to populate Dndrace table
 def populateRaces():
@@ -130,7 +182,15 @@ def populateRaces():
         subracestr = ", ".join(subracelist)
         subraceurlstr = ", ".join(subraceurllist)
 
-        newdndrace = Dndrace(name=currname, pageurl=currurl, speed=currspeed, size=currsize, sizedescrip=currsizedesc, age=currage, abilitybonuses=currabilitystr, bonusoptions=bonusoptionstr, numbonuschoices=bonuschoices, startingprofs=profnamestr, startprofoptions=profoptionstr, numprofchoices=profchoices, languages=langstr, langoptions=langoptionstr, numlangchoices=langchoices, langdescrip=langdesc, traits=traitstr, traiturls=traiturlstr, traitoptions=traitoptionstr, numtraitchoices=traitchoices, subraces=subracestr, subraceurls=subraceurlstr)
+        newdndrace = Dndrace(name=currname, pageurl=currurl, speed=currspeed,
+            size=currsize, sizedescrip=currsizedesc, age=currage,
+            abilitybonuses=currabilitystr, bonusoptions=bonusoptionstr,
+            numbonuschoices=bonuschoices, startingprofs=profnamestr,
+            startprofoptions=profoptionstr, numprofchoices=profchoices,
+            languages=langstr, langoptions=langoptionstr, numlangchoices=langchoices,
+            langdescrip=langdesc, traits=traitstr, traiturls=traiturlstr,
+            traitoptions=traitoptionstr, numtraitchoices=traitchoices,
+            subraces=subracestr, subraceurls=subraceurlstr)
         db.session.add(newdndrace) 
     db.session.commit()
 
@@ -152,8 +212,8 @@ def populateEquipment():
         else:
             currweight = 0
         dmgtype, dmgdice, subcategory, itempropstr, propurlstr, stealthdis = "", "", "", "", "", ""
-        maxbonus, dexbonus, normalrg, longrg, baseac, strengthmin = 0, 0, 0, 0, 0, 0 
-        itemdesc = ""
+        maxbonus, normalrg, longrg, baseac, strengthmin = 0, 0, 0, 0, 0 
+        itemdesc, dexbonus = "", ""
         itemproperties = []
         propurls = []
 
@@ -192,11 +252,19 @@ def populateEquipment():
         if "desc" in curr_rj:
             itemdesc = " ".join(curr_rj["desc"])
 
-        newdndequipment = Dndequipment(name=currname, cost=currcost, weight=currweight, maincategory=currtype, secondcategory=subcategory, properties=itempropstr, propertyurls=propurlstr, damagetype=dmgtype, damagedice=dmgdice, base_ac=baseac, description=itemdesc, dexteritybonus=dexbonus, maximumbonus=maxbonus, minimumstrength=strengthmin, disadvantage=stealthdis, normrange=normalrg, longrange=longrg) 
+        newdndequipment = Dndequipment(name=currname, cost=currcost,
+            weight=currweight, maincategory=currtype, secondcategory=subcategory,
+            properties=itempropstr, propertyurls=propurlstr, damagetype=dmgtype,
+            damagedice=dmgdice, base_ac=baseac, description=itemdesc,
+            dexteritybonus=dexbonus, maximumbonus=maxbonus, minimumstrength=strengthmin,
+            disadvantage=stealthdis, normrange=normalrg, longrange=longrg) 
         db.session.add(newdndequipment)
     db.session.commit()
 
 #populateClasses() # done already, do not run again 
 #populateSpells() # done
-#populateRaces() # done
-#populateEquipment() # done
+#populateSpellLevels() # done
+#populateSpellClasses() # done
+#populateSpellSchools() # done
+#populateRaces() # 
+#populateEquipment() # 
