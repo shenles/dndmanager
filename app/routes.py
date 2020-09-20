@@ -121,25 +121,54 @@ def ajax_request():
 @login_required
 def createcharacter2():
     form1 = AssignAbilitiesForm()
+    curr_result = None
     if form1.is_submitted():
-        # clear previously existing ability scores
-        '''
-        if session.get('strength'):
-            session.pop('strength')
-        if session.get('dexterity'):
-            session.pop('dexterity')
-        if session.get('constitution'):
-            session.pop('constitution')
-        if session.get('intelligence'):
-            session.pop('intelligence')
-        if session.get('wisdom'):
-            session.pop('wisdom')
-        if session.get('charisma'):
-            session.pop('charisma')
-        '''
-        return render_template('createcharacter2.html', title='Create Character')
+        # get user's choices
+        pos0 = form1.abilities0.data
+        pos1 = form1.abilities1.data
+        pos2 = form1.abilities2.data
+        pos3 = form1.abilities3.data
+        pos4 = form1.abilities4.data
+        pos5 = form1.abilities5.data
+        # check for duplicate choices (e.g. assigning Dexterity twice)
+        my_list = [pos0, pos1, pos2, pos3, pos4, pos5]
+        if len(my_list) != len(set(my_list)):
+            flash('Each ability must be used exactly once. Please try again.')
+        else:
+            # no duplicates, can proceed with setting ability scores
+            # clear previously existing ability scores
+            if session.get(pos0):
+                session.pop(pos0)
+            if session.get(pos1):
+                session.pop(pos1)
+            if session.get(pos2):
+                session.pop(pos2)
+            if session.get(pos3):
+                session.pop(pos3)
+            if session.get(pos4):
+                session.pop(pos4)
+            if session.get(pos5):
+                session.pop(pos5)
+            # save the new ability scores to the session
+            session[pos0] = session.get('roll0')
+            session[pos1] = session.get('roll1')
+            session[pos2] = session.get('roll2')
+            session[pos3] = session.get('roll3')
+            session[pos4] = session.get('roll4')
+            session[pos5] = session.get('roll5')
+            print(session.get('Strength'))
+            print(session.get('Dexterity'))
+            print(session.get('Constitution'))
+            print(session.get('Intelligence'))
+            print(session.get('Wisdom'))
+            print(session.get('Charisma'))
+            return render_template('createcharacter2.html', title='Create Character',
+                success_message='Great! Here are your ability scores (before increases):',
+                currstr=session.get('Strength'), currdex=session.get('Dexterity'),
+                currcon=session.get('Constitution'), currint=session.get('Intelligence'),
+                currwis=session.get('Wisdom'), currcha=session.get('Charisma'))
+
     else:
-        curr_result = None
         if session.get('characterRace'):
             curr_race = session['characterRace']
             curr_result = Dndrace.query.filter_by(name=curr_race).first()
@@ -152,11 +181,11 @@ def createcharacter2():
         #print(session.get('roll3'))
         #print(session.get('roll4'))
         #print(session.get('roll5'))
-        return render_template('createcharacter2.html', title='Create Character',
-                myrace=session.get('characterRace'), myclass=session.get('characterClass'),
-                myalign=session.get('characterAlign'), assign0=session.get('roll0'),
-                assign1=session.get('roll1'), assign2=session.get('roll2'), assign3=session.get('roll3'),
-                assign4=session.get('roll4'), assign5=session.get('roll5'), form1=form1, thisrace=curr_result)
+    return render_template('createcharacter2.html', title='Create Character',
+            myrace=session.get('characterRace'), myclass=session.get('characterClass'),
+            myalign=session.get('characterAlign'), assign0=session.get('roll0'),
+            assign1=session.get('roll1'), assign2=session.get('roll2'), assign3=session.get('roll3'),
+            assign4=session.get('roll4'), assign5=session.get('roll5'), form1=form1, thisrace=curr_result)
 
 @app.route('/dndraces')
 @login_required

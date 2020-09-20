@@ -3,10 +3,12 @@
 {% block content %}
 
     <h1>Creating your character:</h1>
+    {% if myalign %}
     <span id="chosenAlign">{{ myalign }}</span>
     <span id="chosenRace">{{ myrace }}</span>
     <span id="chosenClass">{{ myclass }}</span>
-    <p>Now assign each of your rolls to one of your abilities.</p>
+    <p>Assign each of your rolls to one of your abilities.</p>
+    {% endif %}
 
     {% if thisrace %}
     <p>Keep in mind that your race will add an increase to these abilities: {{ thisrace.abilitybonuses }}</p>
@@ -16,6 +18,7 @@
         {% endif %}
     {% endif %}
 
+    {% if assign0 %}
     <h2>Your rolls:</h2>
     <div id="rollsToAssign">
       {% if form1 %}
@@ -43,5 +46,20 @@
       </form>
       {% endif %}
     </div>
+    {% endif %}
+
+    {% if success_message %}
+    <p>{{ success_message }}</p>
+    <table>
+        <tr>
+            <th>Strength (STR)</th><th>Dexterity (DEX)</th><th>Constitution (CON)</th>
+            <th>Intelligence (INT)</th><th>Wisdom (WIS)</th><th>Charisma (CHA)</th>
+        </tr>
+        <tr>
+            <td>{{ currstr }}</td><td>{{ currdex }}</td><td>{{ currcon }}</td>
+            <td>{{ currint }}</td><td>{{ currwis }}</td><td>{{ currcha }}</td>
+        </tr>
+    </table>
+    {% endif %}
 
 {% endblock %}
