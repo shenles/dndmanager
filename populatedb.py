@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import Dndclass, Dndspell, Dndrace, Dndequipment, SpellLevel, SpellClass, SpellSchool
+from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool
 import requests
 import json
 
@@ -131,7 +131,25 @@ def populateRaces():
 
         currabilitybonuses = [x["name"] for x in curr_rj["ability_bonuses"]]  
         currabilitystr = ", ".join(currabilitybonuses)
-        currabilstr = ", ".join(currabilitybonuses) 
+        bonus1, bonus2, bonus3, bonus4, bonus5, bonus6 = 0, 0, 0, 0, 0, 0
+        bonusname1, bonusname2, bonusname3, bonusname4, bonusname5, bonusname6 = "", "", "", "", "", ""
+        bonus1 = curr_rj["ability_bonuses"][0]["bonus"]
+        bonusname1 = curr_rj["ability_bonuses"][0]["name"]
+        if len(curr_rj["ability_bonuses"]) > 5:
+            bonus6 = curr_rj["ability_bonuses"][5]["bonus"]
+            bonusname6 = curr_rj["ability_bonuses"][5]["name"]
+        if len(curr_rj["ability_bonuses"]) > 4:
+            bonus5 = curr_rj["ability_bonuses"][4]["bonus"]
+            bonusname5 = curr_rj["ability_bonuses"][4]["name"]
+        if len(curr_rj["ability_bonuses"]) > 3:
+            bonus4 = curr_rj["ability_bonuses"][3]["bonus"]
+            bonusname4 = curr_rj["ability_bonuses"][3]["name"]
+        if len(curr_rj["ability_bonuses"]) > 2:
+            bonus3 = curr_rj["ability_bonuses"][2]["bonus"]
+            bonusname3 = curr_rj["ability_bonuses"][2]["name"]
+        if len(curr_rj["ability_bonuses"]) > 1:
+            bonus2 = curr_rj["ability_bonuses"][1]["bonus"]
+            bonusname2 = curr_rj["ability_bonuses"][1]["name"]       
         bonusoptionlist = []
         bonuschoices = 0
         if "ability_bonus_options" in curr_rj:
@@ -184,14 +202,57 @@ def populateRaces():
 
         newdndrace = Dndrace(name=currname, pageurl=currurl, speed=currspeed,
             size=currsize, sizedescrip=currsizedesc, age=currage,
-            abilitybonuses=currabilitystr, bonusoptions=bonusoptionstr,
-            numbonuschoices=bonuschoices, startingprofs=profnamestr,
+            abilitybonuses=currabilitystr, bonus1=bonus1, bonus2=bonus2, bonus3=bonus3,
+            bonus4=bonus4, bonus5=bonus5, bonus6=bonus6, bonusname1=bonusname1, bonusname2=bonusname2,
+            bonusname3=bonusname3, bonusname4=bonusname4, bonusname5=bonusname5, bonusname6=bonusname6,
+            numbonuschoices=bonuschoices, bonusoptions=bonusoptionstr, startingprofs=profnamestr,
             startprofoptions=profoptionstr, numprofchoices=profchoices,
             languages=langstr, langoptions=langoptionstr, numlangchoices=langchoices,
             langdescrip=langdesc, traits=traitstr, traiturls=traiturlstr,
             traitoptions=traitoptionstr, numtraitchoices=traitchoices,
             subraces=subracestr, subraceurls=subraceurlstr)
         db.session.add(newdndrace) 
+    db.session.commit()
+
+# pull info from API to populate Dndsubrace table
+def populateSubraces():
+    url = 'https://www.dnd5eapi.co/api/subraces'
+    r = requests.get(url).content
+    rj = json.loads(r)
+
+    for item in rj["results"]:
+        currname = item["name"] # e.g. "High Elf"
+        currurl = 'https://www.dnd5eapi.co' + item["url"]
+        curr_r = requests.get(currurl).content
+        curr_rj = json.loads(curr_r)
+        assoc_race = curr_rj["race"]["name"] # e.g. "Elf"
+        desc = curr_rj["desc"]
+        curritem = curr_rj["ability_bonuses"][0]
+        increase = curritem["bonus"]
+        increased_score = curritem["name"]
+        startprofs = [x["name"] for x in curr_rj["starting_proficiencies"]]
+        startprofs_str = ", ".join(startprofs)
+        langs = [x["name"] for x in curr_rj["languages"]]
+        langstr = ", ".join(langs)
+        numlangs = 0
+        numtraits = 0
+        langchoices = ""
+        traitchoices = ""
+        if "language_options" in curr_rj:
+            numlangs = curr_rj["language_options"]["choose"]
+            langlist = [l["name"] for l in curr_rj["language_options"]["from"]]
+            langchoices = ", ".join(langlist)
+        traitslist = [x["name"] for x in curr_rj["racial_traits"]]
+        traits_str = ", ".join(traitslist)
+        if "racial_trait_options" in curr_rj:
+            numtraits = curr_rj["racial_trait_options"]["choose"]
+            traitchoicelist = [t["name"] for t in curr_rj["racial_trait_options"]["from"]]
+
+        newdndsubrace = Dndsubrace(name=currname, race=assoc_race, description=desc,
+            bonus1=increase, bonusname1=increased_score, startingprofs=startprofs_str,
+            languages=langstr, numlangchoices=numlangs, langoptions=langchoices,
+            racialtraits=traits_str, numtraitchoices=numtraits, traitoptions=traitchoices)
+        db.session.add(newdndsubrace)
     db.session.commit()
 
 # pull equipment info from API to populate Dndequipment table
@@ -266,5 +327,6 @@ def populateEquipment():
 #populateSpellLevels() # done
 #populateSpellClasses() # done
 #populateSpellSchools() # done
-#populateRaces() # 
-#populateEquipment() # 
+#populateRaces() # done
+#populateSubraces() # done
+#populateEquipment() # done

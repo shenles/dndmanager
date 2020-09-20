@@ -135,9 +135,21 @@ class Dndrace(db.Model):
     size = db.Column(db.String(32))
     sizedescrip = db.Column(db.String(640))
     age = db.Column(db.String(640))
-    abilitybonuses = db.Column(db.String(500))
-    bonusoptions = db.Column(db.String(900))
+    abilitybonuses = db.Column(db.String(500)) # e.g. "DEX, CON"
+    bonus1 = db.Column(db.Integer)
+    bonus2 = db.Column(db.Integer)
+    bonus3 = db.Column(db.Integer)
+    bonus4 = db.Column(db.Integer)
+    bonus5 = db.Column(db.Integer)
+    bonus6 = db.Column(db.Integer)
+    bonusname1 = db.Column(db.String(60)) # e.g. "DEX"
+    bonusname2 = db.Column(db.String(60))
+    bonusname3 = db.Column(db.String(60))
+    bonusname4 = db.Column(db.String(60))
+    bonusname5 = db.Column(db.String(60))
+    bonusname6 = db.Column(db.String(60))
     numbonuschoices = db.Column(db.Integer)
+    bonusoptions = db.Column(db.String(900))
     startingprofs = db.Column(db.String(800))
     startprofoptions = db.Column(db.String(900))
     numprofchoices = db.Column(db.Integer) 
@@ -155,6 +167,24 @@ class Dndrace(db.Model):
 
     def __repr__(self):
         return '<Dndrace {}>'.format(self.name)
+
+class Dndsubrace(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True) 
+    race = db.Column(db.String(60))
+    description = db.Column(db.String(3200))
+    bonus1 = db.Column(db.Integer)
+    bonusname1 = db.Column(db.String(60)) # e.g. "DEX"
+    startingprofs = db.Column(db.String(1600))
+    languages = db.Column(db.String(1600))
+    numlangchoices = db.Column(db.Integer)
+    langoptions = db.Column(db.String(3200))
+    racialtraits = db.Column(db.String(3200))
+    numtraitchoices = db.Column(db.Integer)
+    traitoptions = db.Column(db.String(3200))
+
+    def __repr__(self):
+        return '<Dndsubrace {}>'.format(self.name)
 
 class Dndequipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
