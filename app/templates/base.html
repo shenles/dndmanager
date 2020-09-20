@@ -34,4 +34,91 @@
         {% endwith %}
         {% block content %}{% endblock %}
     </body>
+
+    <script>
+
+        var rollsToShow = [], scoresToAssign = [];
+        // Rolls numDice number of dice, with each die of numSides dimension.
+        // Returns an array (sorted descending) of the numbers rolled.
+        function rollDice(numDice, numSides) {
+            var rollsArray = [];
+
+            for (let i = 0; i < numDice; i++) {
+               // get a random integer from 1 to numSides
+               let currentDie = Math.floor(Math.random() * numSides) + 1; 
+               // add current result to array
+               rollsArray.push(currentDie); 
+            } 
+            // sort array descending
+            rollsArray.sort(function(a, b) {return b - a});
+            return rollsArray;
+        }
+
+        // Displays a new set of rolls or the default rolls,
+        // depending on the user's choice. 
+        function showRoll(rolloption) {
+            // user chose to re-roll 
+            if (rolloption == 1) {
+
+               rollsToShow = [];
+               // roll 4d6 and add up the 3 highest numbers. Do this 6 times
+               for (let i = 0; i < 6; i++) {
+                  let currArray = rollDice(4, 6);
+                  let currTotal = currArray[0] + currArray[1] + currArray[2];
+                  rollsToShow.push(currTotal);
+               }  
+               // sort descending
+               rollsToShow.sort(function(a, b) {return b - a});
+            } else {
+               // user chose to use default rolls 
+               rollsToShow = [15, 14, 13, 12, 10, 8];
+            }  
+            // display rolls
+            for (let i = 0; i < 6; i++) {
+                let idToGet = "roll".concat(i.toString());
+                document.getElementById(idToGet).textContent = rollsToShow[i];
+            }
+        }
+
+        // Shows unassigned scores after user is done rolling
+        function showScores() {
+            if (rollsToShow.length == 0) {
+               scoresToAssign = [15, 14, 13, 12, 10, 8];
+            } else {
+               for (let i = 0; i < rollsToShow.length; i++) {
+                  scoresToAssign.push(rollsToShow[i]);
+               }
+            }
+
+            var data = new FormData();
+
+            for (let i = 0; i < 6; i++) {
+                let idToGet = "finalroll".concat(i.toString());
+                document.getElementById(idToGet).textContent = scoresToAssign[i];
+                let dataId = "assign".concat(i.toString());
+                data.append(dataId, scoresToAssign[i]);
+            }
+
+            for (var value of data.values()) {
+               console.log(value); 
+            }
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/ajax", true);
+               
+            xhttp.onreadystatechange = function() {
+               if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                  console.log("finished");
+               } else {
+                  console.log(this.readyState);
+                  console.log(this.status);
+               }
+            }
+
+            xhttp.send(data);
+            document.getElementById('initialRolls').style.display = "none";
+            document.getElementById('finalRolls').style.display = "block";
+        }
+
+    </script>
 </html>

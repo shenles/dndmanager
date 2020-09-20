@@ -1,10 +1,68 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Create a new D&D character</h1>
+    <h1>Create new D&D character</h1>
+    
+    {% if form %}
     <div>
-    {% if message %}
-        <p>{{ message }}</p>
-    {% endif %}
+        <h2>Select class & race:</h2>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            {{ form.races_list }}
+            {{ form.classes_list }}
+            {{ form.alignment_list }}
+            <button type="submit">Submit</button>
+        </form>
     </div>
+    {% endif %}
+
+    <div>
+        {% if message %}
+            <h2>{{ message }}</h2>
+        {% endif %}
+        {% if race_pick %}
+            <p id="racepick">{{ race_pick }}</p>
+        {% endif %}
+        {% if class_pick %}
+            <p id="classpick">{{ class_pick }}</p>
+        {% endif %}
+        {% if align_pick %}
+            <p id="alignpick">{{ align_pick }}</p>
+        {% endif %}
+    </div>
+
+    {% if race_pick %}
+        <div id="initialRolls">
+            <p>Roll your ability scores, or use the default rolls.
+               Click "Done rolling" when you are finished.</p>
+            <table>
+                <tr>
+                    <td id="roll0">15</td>
+                    <td id="roll1">14</td>
+                    <td id="roll2">13</td>
+                    <td id="roll3">12</td>
+                    <td id="roll4">10</td>
+                    <td id="roll5">8</td>
+                    <td><button type="button" onclick="showRoll(1)">Re-roll</button></td>
+                    <td><button type="button" onclick="showRoll(2)">Use default rolls</button></td>
+                </tr>
+            </table>
+            <button type="button" onclick="showScores()">Done rolling</button>
+        </div>
+        <div id="finalRolls" style="display:none;">
+            <p>Great! These are your final rolls. Next, we'll assign each roll to an ability score.</p>
+            <p>Click "Continue" to proceed.</p>
+            <table>
+                <tr>
+                    <td id="finalroll0"></td>
+                    <td id="finalroll1"></td>
+                    <td id="finalroll2"></td>
+                    <td id="finalroll3"></td>
+                    <td id="finalroll4"></td>
+                    <td id="finalroll5"></td>
+                </tr>
+            </table>
+            <a href="{{ url_for('createcharacter2') }}">Continue</a>
+        </div>
+    {% endif %}
 {% endblock %}

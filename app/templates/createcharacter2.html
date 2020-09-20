@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Creating your character:</h1>
+    <span id="chosenAlign">{{ myalign }}</span>
+    <span id="chosenRace">{{ myrace }}</span>
+    <span id="chosenClass">{{ myclass }}</span>
+    <p>Now assign each of your rolls to one of your abilities.</p>
+
+    {% if thisrace %}
+    <p>Keep in mind that your race will add an increase to these abilities: {{ thisrace.abilitybonuses }}</p>
+        {% if thisrace.name == "Half-Elf" %}
+            <p>Because your character is a Half-Elf, you will also get to choose {{ thisrace.numbonuschoices }} 
+              abilities to increase from the following: {{ thisrace.bonusoptions }}</p>
+        {% endif %}
+    {% endif %}
+
+    <h2>Your rolls:</h2>
+    <div id="rollsToAssign">
+      {% if form1 %}
+      <form method="post">
+          {{ form1.hidden_tag() }}
+      <table>
+        <tr>
+          <td id="toassign0">{{ assign0 }}</td>
+          <td id="toassign1">{{ assign1 }}</td>
+          <td id="toassign2">{{ assign2 }}</td>
+          <td id="toassign3">{{ assign3 }}</td>
+          <td id="toassign4">{{ assign4 }}</td>
+          <td id="toassign5">{{ assign5 }}</td>
+        </tr>
+        <tr>
+          <td>{{ form1.abilities0 }}</td>
+          <td>{{ form1.abilities1 }}</td>
+          <td>{{ form1.abilities2 }}</td>
+          <td>{{ form1.abilities3 }}</td>
+          <td>{{ form1.abilities4 }}</td>
+          <td>{{ form1.abilities5 }}</td>
+        </tr>
+      </table>
+      <button type="submit">Done assigning</button>
+      </form>
+      {% endif %}
+    </div>
+
+{% endblock %}
