@@ -4,9 +4,12 @@
 
     <h1>Creating your character:</h1>
     {% if myalign %}
-    <span id="chosenAlign">{{ myalign }}</span>
-    <span id="chosenRace">{{ myrace }}</span>
-    <span id="chosenClass">{{ myclass }}</span>
+      <span id="chosenAlign">{{ myalign }}</span>
+      <span id="chosenRace">{{ myrace }}</span>
+      <span id="chosenClass">{{ myclass }}</span>
+      {% if mysubrace %}
+      <span id="chosenSubrace">({{ mysubrace.name }})</span>
+      {% endif %}
     <p>Assign each of your rolls to one of your abilities.</p>
     {% endif %}
 
@@ -15,6 +18,9 @@
         {% if thisrace.name == "Half-Elf" %}
             <p>Because your character is a Half-Elf, you will also get to choose {{ thisrace.numbonuschoices }} 
               abilities to increase from the following: {{ thisrace.bonusoptions }}</p>
+        {% endif %}
+        {% if mysubrace %}
+            <p>Your subrace, {{ mysubrace.name }}, will also add {{ mysubrace.bonus1 }} to {{ mysubrace.bonusname1 }}.</p>
         {% endif %}
     {% endif %}
 
@@ -58,6 +64,20 @@
         <tr>
             <td>{{ currstr }}</td><td>{{ currdex }}</td><td>{{ currcon }}</td>
             <td>{{ currint }}</td><td>{{ currwis }}</td><td>{{ currcha }}</td>
+        </tr>
+    </table>
+    {% endif %}
+
+    {% if message2 %}
+    <p>{{ message2 }}</p>
+    <table>
+        <tr>
+            <th>Strength (STR)</th><th>Dexterity (DEX)</th><th>Constitution (CON)</th>
+            <th>Intelligence (INT)</th><th>Wisdom (WIS)</th><th>Charisma (CHA)</th>
+        </tr>
+        <tr>
+            <td>{{ finalstr }}</td><td>{{ finaldex }}</td><td>{{ finalcon }}</td>
+            <td>{{ finalint }}</td><td>{{ finalwis }}</td><td>{{ finalcha }}</td>
         </tr>
     </table>
     {% endif %}

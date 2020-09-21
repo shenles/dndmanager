@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import widgets, RadioField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, InputRequired, Optional, Email, EqualTo
-from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace
+from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace, Dndsubrace
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -39,6 +39,19 @@ class CreateCharacterForm(FlaskForm):
     classes_list = SelectField('Class', choices=class_options)
     alignment_options = ['Lawful good', 'Neutral good', 'Chaotic good', 'Lawful neutral', 'Neutral', 'Chaotic neutral', 'Lawful evil', 'Neutral evil', 'Chaotic evil']
     alignment_list = SelectField('Alignment', choices=alignment_options)
+    submit = SubmitField('Submit')
+
+class ChooseSubraceForm(FlaskForm):
+    subrace_res = Dndsubrace.query.with_entities(Dndsubrace.name).all()
+    allsubraces = [x[0] for x in subrace_res if len(x[0]) > 0]
+    options1 = [allsubraces[0], 'None']
+    options2 = [allsubraces[1], 'None']
+    options3 = [allsubraces[2], 'None']
+    options4 = [allsubraces[3], 'None']
+    subrace1 = SelectField('Subrace', choices=options1)
+    subrace2 = SelectField('Subrace', choices=options2)
+    subrace3 = SelectField('Subrace', choices=options3)
+    subrace4 = SelectField('Subrace', choices=options4)
     submit = SubmitField('Submit')
 
 class AssignAbilitiesForm(FlaskForm):

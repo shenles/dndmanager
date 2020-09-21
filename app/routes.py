@@ -2,9 +2,10 @@ from flask import request, render_template, flash, redirect, url_for, session
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, CreateCharacterForm, AssignAbilitiesForm
+from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm
+from app.forms import SpellFilterForm, CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndequipment
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -65,7 +66,12 @@ def dndclasses():
 @login_required
 def createcharacter():
     form = CreateCharacterForm()
-    if form.is_submitted():
+    form2 = ChooseSubraceForm()
+    if not session.get('subraceDone'):
+        session['subraceDone'] = 'no'
+    # user has chosen a race but hasn't yet chosen a subrace
+    if form.is_submitted() and session.get('subraceDone') == 'no':
+        print('reached block 1')
         char_race = form.races_list.data
         char_class = form.classes_list.data
         char_align = form.alignment_list.data
@@ -76,13 +82,58 @@ def createcharacter():
             session.pop('characterClass')
         if session.get('characterAlign'):
             session.pop('characterAlign')
+        if session.get('characterSubrace'):
+            session.pop('characterSubrace')
         # store new session data
         session['characterRace'] = char_race
         session['characterClass'] = char_class
         session['characterAlign'] = char_align
+        # if chosen race has subraces, let user choose a subrace
+        print(char_race)
+        if char_race in ["Elf", "Dwarf", "Halfling", "Gnome"]:
+            # mark subrace step as done
+            if session.get('subraceDone'):
+                session.pop('subraceDone')
+            session['subraceDone'] = 'yes'
+            return render_template('createcharacter.html', title='Create Character',
+                class_pick=form.classes_list.data, race_pick=form.races_list.data,
+                align_pick=form.alignment_list.data, message='Creating your character:', form2=form2)
+        # otherwise, skip subrace step and start rolling ability scores
+        else:
+            if session.get('subraceDone'):
+                session.pop('subraceDone')
+            session['subraceDone'] = 'yes'
+            return render_template('createcharacter.html', title='Create Character',
+                class_pick=form.classes_list.data, race_pick=form.races_list.data,
+                align_pick=form.alignment_list.data, message='Creating your character:', start_rolling='yes')  
+    # user has chosen a subrace
+    if form2.is_submitted() and session.get('subraceDone') == 'yes':
+        print('reached block 2')
+        if form2.subrace1.data:
+            subracedata = form2.subrace1.data
+        elif form2.subrace2.data:
+            subracedata = form2.subrace2.data
+        elif form2.subrace3.data:
+            subracedata = form2.subrace3.data
+        elif form2.subrace4.data:
+            subracedata = form2.subrace4.data
+        else:
+            subracedata = None
+        # save subrace to session
+        if session.get('characterSubrace'):
+            session.pop('characterSubrace')
+        session['characterSubrace'] = subracedata
+        print(subracedata)
+        if session.get('subraceDone'):
+            session.pop('subraceDone')
+        session['subraceDone'] = 'no'
         return render_template('createcharacter.html', title='Create Character',
-            class_pick=form.classes_list.data, race_pick=form.races_list.data,
-            align_pick=form.alignment_list.data, message='Creating your character:')
+                class_pick=session.get('characterClass'), race_pick=session.get('characterRace'),
+                align_pick=session.get('characterAlign'), message='Creating your character:',
+                start_rolling='yes', subrace=subracedata)
+    if session.get('subraceDone'):
+        session.pop('subraceDone')
+    session['subraceDone'] = 'no'
     return render_template('createcharacter.html', title='Create Character', form=form)
 
 @app.route('/ajax', methods=['POST'])
@@ -108,12 +159,12 @@ def ajax_request():
         assign_3 = request.form["assign3"]
         assign_4 = request.form["assign4"]
         assign_5 = request.form["assign5"]
-        session['roll0'] = assign_0
-        session['roll1'] = assign_1
-        session['roll2'] = assign_2
-        session['roll3'] = assign_3
-        session['roll4'] = assign_4
-        session['roll5'] = assign_5
+        session['roll0'] = int(assign_0)
+        session['roll1'] = int(assign_1)
+        session['roll2'] = int(assign_2)
+        session['roll3'] = int(assign_3)
+        session['roll4'] = int(assign_4)
+        session['roll5'] = int(assign_5)
         return "success"
     return "failure"
 
@@ -121,7 +172,10 @@ def ajax_request():
 @login_required
 def createcharacter2():
     form1 = AssignAbilitiesForm()
+    #halfelf_form = HalfElfForm()
     curr_result = None
+    curr_subrace_result = None
+    # user has assigned each roll to an ability
     if form1.is_submitted():
         # get user's choices
         pos0 = form1.abilities0.data
@@ -156,36 +210,68 @@ def createcharacter2():
             session[pos3] = session.get('roll3')
             session[pos4] = session.get('roll4')
             session[pos5] = session.get('roll5')
-            print(session.get('Strength'))
-            print(session.get('Dexterity'))
-            print(session.get('Constitution'))
-            print(session.get('Intelligence'))
-            print(session.get('Wisdom'))
-            print(session.get('Charisma'))
+            rawstrength = session.get('Strength')
+            rawdex = session.get('Dexterity')
+            rawconst = session.get('Constitution')
+            rawintel = session.get('Intelligence')
+            rawwisdom = session.get('Wisdom')
+            rawcharisma = session.get('Charisma')
+            # gather info to pass to the template
+            msg1 = 'Great! Here are your ability scores, before increases:'
+            msg2 = 'Here are your scores after race/subrace increases:'
+            if session.get('characterRace'):
+                curr_race = session['characterRace']
+                curr_result = Dndrace.query.filter_by(name=curr_race).first()
+            if session.get('characterSubrace'):
+                curr_subrace = session['characterSubrace']
+                curr_subrace_result = Dndsubrace.query.filter_by(name=curr_subrace).first()
+            # calculate new, increased scores based on race & subrace
+            abilitydict = {'STR': 'Strength', 'DEX': 'Dexterity', 'CON': 'Constitution', 'INT': 'Intelligence', 'WIS': 'Wisdom', 'CHA': 'Charisma'}
+            if curr_result:
+                bonuses = [curr_result.bonus1, curr_result.bonus2, curr_result.bonus3, curr_result.bonus4, curr_result.bonus5, curr_result.bonus6]
+                bonusnames = [curr_result.bonusname1, curr_result.bonusname2, curr_result.bonusname3, curr_result.bonusname4, curr_result.bonusname5, curr_result.bonusname6]
+                # add bonuses to raw scores
+                for i in range(len(bonuses)):
+                    if bonuses[i] > 0:
+                        cn = bonusnames[i]
+                        cn_full = abilitydict[cn]
+                        if session.get(cn_full):
+                            curr_score = session.get(cn_full)
+                            session.pop(cn_full)
+                            session[cn_full] = curr_score + bonuses[i]
+            # add any bonuses related to subrace
+            if curr_subrace_result:
+                shortname = curr_subrace_result.bonusname1
+                fullname = abilitydict[shortname]
+                if session.get(fullname):
+                    currscore = session.get(fullname)
+                    session.pop(fullname)
+                    session[fullname] = currscore + curr_subrace_result.bonus1
+            # special choice for half-elves
+            if session.get('characterRace') == 'Half-Elf':
+                print('half elf')
+
             return render_template('createcharacter2.html', title='Create Character',
-                success_message='Great! Here are your ability scores (before increases):',
-                currstr=session.get('Strength'), currdex=session.get('Dexterity'),
-                currcon=session.get('Constitution'), currint=session.get('Intelligence'),
-                currwis=session.get('Wisdom'), currcha=session.get('Charisma'))
+                success_message=msg1, message2=msg2, currstr=rawstrength, currdex=rawdex,
+                currcon=rawconst, currint=rawintel, currwis=rawwisdom, currcha=rawcharisma,
+                finalstr=session.get('Strength'), finaldex=session.get('Dexterity'),
+                finalcon=session.get('Constitution'), finalint=session.get('Intelligence'),
+                finalwis=session.get('Wisdom'), finalcha=session.get('Charisma'))
 
     else:
         if session.get('characterRace'):
             curr_race = session['characterRace']
             curr_result = Dndrace.query.filter_by(name=curr_race).first()
-        #print(session.get('characterRace'))
-        #print(session.get('characterClass'))
-        #print(session.get('characterAlign'))
-        #print(session.get('roll0'))
-        #print(session.get('roll1'))
-        #print(session.get('roll2'))
-        #print(session.get('roll3'))
-        #print(session.get('roll4'))
-        #print(session.get('roll5'))
+        if session.get('characterSubrace'):
+            curr_subrace = session['characterSubrace']
+            curr_subrace_result = Dndsubrace.query.filter_by(name=curr_subrace).first()
     return render_template('createcharacter2.html', title='Create Character',
             myrace=session.get('characterRace'), myclass=session.get('characterClass'),
-            myalign=session.get('characterAlign'), assign0=session.get('roll0'),
-            assign1=session.get('roll1'), assign2=session.get('roll2'), assign3=session.get('roll3'),
-            assign4=session.get('roll4'), assign5=session.get('roll5'), form1=form1, thisrace=curr_result)
+            myalign=session.get('characterAlign'), mysubrace=curr_subrace_result,
+            assign0=session.get('roll0'), assign1=session.get('roll1'),
+            assign2=session.get('roll2'), assign3=session.get('roll3'),
+            assign4=session.get('roll4'), assign5=session.get('roll5'),
+            form1=form1, thisrace=curr_result)
 
 @app.route('/dndraces')
 @login_required

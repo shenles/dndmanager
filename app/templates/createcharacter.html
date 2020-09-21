@@ -3,7 +3,7 @@
 {% block content %}
     <h1>Create new D&D character</h1>
     
-    {% if form %}
+    {% if form and not form2 %}
     <div>
         <h2>Select class & race:</h2>
         <form method="post">
@@ -16,25 +16,31 @@
     </div>
     {% endif %}
 
+    {% if message %}
     <div>
-        {% if message %}
-            <h2>{{ message }}</h2>
-        {% endif %}
+        <h2>{{ message }}</h2>
         {% if race_pick %}
-            <p id="racepick">{{ race_pick }}</p>
+            <p id="racepick">Race: {{ race_pick }}</p>
         {% endif %}
         {% if class_pick %}
-            <p id="classpick">{{ class_pick }}</p>
+            <p id="classpick">Class: {{ class_pick }}</p>
         {% endif %}
         {% if align_pick %}
-            <p id="alignpick">{{ align_pick }}</p>
+            <p id="alignpick">Alignment: {{ align_pick }}</p>
+        {% endif %}
+        {% if subrace %}
+            <p id="subracepick">Subrace: {{ subrace }}</p>
         {% endif %}
     </div>
+    {% endif %}
 
-    {% if race_pick %}
+    {% if race_pick and (start_rolling and not form2) %}
         <div id="initialRolls">
             <p>Roll your ability scores, or use the default rolls.
-               Click "Done rolling" when you are finished.</p>
+               Bonuses will be added to these scores during the next step.
+            </p>
+
+            <p>Click "Done rolling" when you are finished.</p>
             <table>
                 <tr>
                     <td id="roll0">15</td>
@@ -51,6 +57,7 @@
         </div>
         <div id="finalRolls" style="display:none;">
             <p>Great! These are your final rolls. Next, we'll assign each roll to an ability score.</p>
+            <p>Then we'll add any increases from your race.</p>
             <p>Click "Continue" to proceed.</p>
             <table>
                 <tr>
@@ -65,4 +72,27 @@
             <a href="{{ url_for('createcharacter2') }}">Continue</a>
         </div>
     {% endif %}
+
+    {% if form2 and (race_pick and not start_rolling) %}
+    <div>
+        <h2>Select class & race:</h2>
+        <form method="post">
+            {{ form2.hidden_tag() }}
+            {% if race_pick == "Elf" %}
+                {{ form2.subrace1 }}
+            {% endif %}
+            {% if race_pick == "Dwarf" %}
+                {{ form2.subrace2 }}
+            {% endif %}
+            {% if race_pick == "Halfling" %}
+                {{ form2.subrace3 }}
+            {% endif %}
+            {% if race_pick == "Gnome" %}
+                {{ form2.subrace4 }}
+            {% endif %}
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    {% endif %}
+
 {% endblock %}
