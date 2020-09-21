@@ -62,6 +62,9 @@ def dndclasses():
     ddclasses = Dndclass.query.all() 
     return render_template('dndclasses.html', title='D&D Classes', allclasses=ddclasses)
 
+# first step of character creation
+# user chooses a race, class, & alignment for their character, then rolls scores.
+# also chooses a subrace if applicable.
 @app.route('/createcharacter', methods=['GET', 'POST'])
 @login_required
 def createcharacter():
@@ -168,6 +171,9 @@ def ajax_request():
         return "success"
     return "failure"
 
+# second step of character creation
+# user assigns each roll to an ability score.
+# race/subrace-based increases are applied.
 @app.route('/createcharacter2', methods=['GET', 'POST'])
 @login_required
 def createcharacter2():

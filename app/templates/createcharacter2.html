@@ -14,14 +14,34 @@
     {% endif %}
 
     {% if thisrace %}
-    <p>Keep in mind that your race will add an increase to these abilities: {{ thisrace.abilitybonuses }}</p>
-        {% if thisrace.name == "Half-Elf" %}
-            <p>Because your character is a Half-Elf, you will also get to choose {{ thisrace.numbonuschoices }} 
-              abilities to increase from the following: {{ thisrace.bonusoptions }}</p>
-        {% endif %}
-        {% if mysubrace %}
-            <p>Your subrace, {{ mysubrace.name }}, will also add {{ mysubrace.bonus1 }} to {{ mysubrace.bonusname1 }}.</p>
-        {% endif %}
+      <p>Keep in mind that your race will add the following increases:</p>
+      <ul>
+          <li>{{ thisrace.bonus1 }} to {{ thisrace.bonusname1 }}</li>
+      {% if thisrace.bonus2 > 0 %}
+          <li>{{ thisrace.bonus2 }} to {{ thisrace.bonusname2 }}</li>
+      {% endif %}
+      {% if thisrace.bonus3 > 0 %}
+          <li>{{ thisrace.bonus3 }} to {{ thisrace.bonusname3 }}</li>
+      {% endif %}
+      {% if thisrace.bonus4 > 0 %}
+          <li>{{ thisrace.bonus4 }} to {{ thisrace.bonusname4 }}</li>
+      {% endif %}
+      {% if thisrace.bonus5 > 0 %}
+          <li>{{ thisrace.bonus5 }} to {{ thisrace.bonusname5 }}</li>
+      {% endif %}
+      {% if thisrace.bonus6 > 0 %}
+          <li>{{ thisrace.bonus6 }} to {{ thisrace.bonusname6 }}</li>
+      {% endif %}
+      </ul>
+
+      {% if thisrace.name == "Half-Elf" %}
+          <p>Because your character is a Half-Elf, you will also get to choose {{ thisrace.numbonuschoices }} 
+            abilities to increase by 1 from the following: {{ thisrace.bonusoptions }}</p>
+      {% endif %}
+      {% if mysubrace %}
+          <p>Your subrace, {{ mysubrace.name }}, will also add {{ mysubrace.bonus1 }} to {{ mysubrace.bonusname1 }}.</p>
+      {% endif %}
+
     {% endif %}
 
     {% if assign0 %}

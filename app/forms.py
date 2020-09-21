@@ -64,6 +64,12 @@ class AssignAbilitiesForm(FlaskForm):
     abilities5 = SelectField('Abilities5', choices=all_abilities)
     submit = SubmitField('Submit')
 
+class HalfElfForm(FlaskForm):
+    all_abilities = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom']
+    abilities = [(x, x) for x in all_abilities]
+    increase_list = MultiCheckboxField('Increases', choices=abilities)
+    submit = SubmitField('Submit')
+
 class SpellFilterForm(FlaskForm):
     spell_levels = SpellLevel.query.with_entities(SpellLevel.level).all()
     spell_classes = SpellClass.query.with_entities(SpellClass.name).all()
