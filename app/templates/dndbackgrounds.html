@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Backgrounds</h1>
+    <div>
+    <h2>Displaying all backgrounds:</h2>
+    {% if allbgs %}
+    <table>
+        <tr><th>Background</th><th>Skill proficiencies</th><th>Tool proficiencies</th>
+        <th>Languages known</th><th>Equipment owned</th><th>Features</th>
+        <th>Variant features</th>
+        <th>Variant backgrounds</th>
+        </tr> 
+        {% for bgname in allbgs %}
+        <tr>
+            <td>{{ bgname.name }}</td><td>{{ bgname.skillprofs }}</td><td>{{ bgname.toolprofs }}</td>
+            <td>{{ bgname.langs }}</td><td>{{ bgname.equipment  }}</td>
+            <td>{{ bgname.feature  }}</td><td>{{ bgname.variant_feature }}</td>
+            <td>{{ bgname.variant }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+{% endblock %}

@@ -5,7 +5,7 @@ from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm
 from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -297,7 +297,6 @@ def createcharacter3():
 
     if session.get('characterRace') == 'Half-Elf' and session.get('halfelfBonusDone') == 'no':
         # mark this step as done
-        #print('block 1 reached')
         if session.get('halfelfBonusDone'):
             session.pop('halfelfBonusDone')
         session['halfelfBonusDone'] = 'yes' 
@@ -305,7 +304,6 @@ def createcharacter3():
         return render_template('createcharacter3.html', title='Create Character', form1=he_form)      
     else:
         if bg_form.is_submitted() and session.get('addHalfElfDone') == 'yes':
-            #print('block 2 reached')
             # display stats, class, and race info that is now complete
             #print(bg_form.data)
             # save character background to session
@@ -322,9 +320,7 @@ def createcharacter3():
             return render_template('createcharacter3.html', title='Create Character',
                 msg2=final_msg, msg3=final_msg2)
         else:
-            #print('block 2.5 reached')
             if session.get('characterRace') == 'Half-Elf' and he_form.is_submitted():
-                #print('block 3 reached')
                 #print(he_form.data)
                 chosen_increases = he_form.data['increase_list']
                 #print(chosen_increases)
@@ -362,6 +358,12 @@ def createcharacter3():
 def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
+
+@app.route('/dndbackgrounds')
+@login_required
+def dndbackgrounds():
+    dd_bgs = Dndbackground.query.all()
+    return render_template('dndbackgrounds.html', title='D&D Backgrounds', allbgs=dd_bgs)
 
 @app.route('/dndequipment', methods=['GET', 'POST'])
 @login_required
