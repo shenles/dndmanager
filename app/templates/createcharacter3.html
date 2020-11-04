@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Creating your character</h1>
+
+    {% if form1 and not form2 %}
+      <p>Choose two ability scores to increase by 1 each:</p>
+      <div>
+          <form method="post">
+              {{ form1.hidden_tag() }}
+              {{ form1.increase_list }}
+              <button type="submit">Submit</button>
+          </form>
+      </div>
+    {% endif %}
+
+    {% if success_message %}
+    <p>{{ success_message }}</p>
+    <table>
+        <tr>
+            <th>Strength (STR)</th><th>Dexterity (DEX)</th><th>Constitution (CON)</th>
+            <th>Intelligence (INT)</th><th>Wisdom (WIS)</th><th>Charisma (CHA)</th>
+        </tr>
+        <tr>
+            <td>{{ currstr }}</td><td>{{ currdex }}</td><td>{{ currcon }}</td>
+            <td>{{ currint }}</td><td>{{ currwis }}</td><td>{{ currcha }}</td>
+        </tr>
+    </table>
+    {% endif %}
+
+    {% if form2 and not form1 %}
+      <p>Choose a background for your character:</p>
+      <div>
+          <form method="post">
+              {{ form2.hidden_tag() }}
+              {{ form2.bg_list }}
+              <button type="submit">Submit</button>
+          </form>
+      </div>
+    {% endif %}   
+
+    {% if msg2 and msg3 %}
+    <p>{{ msg2 }}</p>
+    <p>{{ msg3 }}</p>
+    <a href="{{ url_for('index') }}">Continue</a>
+    {% endif %}
+    
+{% endblock %}

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import widgets, RadioField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, InputRequired, Optional, Email, EqualTo
-from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace, Dndsubrace
+from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace, Dndsubrace, Dndbackground
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -68,6 +68,13 @@ class HalfElfForm(FlaskForm):
     all_abilities = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom']
     abilities = [(x, x) for x in all_abilities]
     increase_list = MultiCheckboxField('Increases', choices=abilities)
+    submit = SubmitField('Submit')
+
+class ChooseBgForm(FlaskForm):
+    bg_res = Dndbackground.query.with_entities(Dndbackground.name).all()
+    all_backgrounds = [x[0] for x in bg_res]
+    all_backgrounds.append('None')
+    bg_list = RadioField('Backgrounds', choices=all_backgrounds)
     submit = SubmitField('Submit')
 
 class SpellFilterForm(FlaskForm):

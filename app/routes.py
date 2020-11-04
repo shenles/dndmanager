@@ -2,8 +2,8 @@ from flask import request, render_template, flash, redirect, url_for, session
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm
-from app.forms import SpellFilterForm, CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm
+from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm
+from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment
 
@@ -74,7 +74,7 @@ def createcharacter():
         session['subraceDone'] = 'no'
     # user has chosen a race but hasn't yet chosen a subrace
     if form.is_submitted() and session.get('subraceDone') == 'no':
-        print('reached block 1')
+        #print('reached block 1')
         char_race = form.races_list.data
         char_class = form.classes_list.data
         char_align = form.alignment_list.data
@@ -92,17 +92,18 @@ def createcharacter():
         session['characterClass'] = char_class
         session['characterAlign'] = char_align
         # if chosen race has subraces, let user choose a subrace
-        print(char_race)
+        #print(char_race)
         if char_race in ["Elf", "Dwarf", "Halfling", "Gnome"]:
-            # mark subrace step as done
+            # mark subrace step as done so it is not repeated
             if session.get('subraceDone'):
                 session.pop('subraceDone')
             session['subraceDone'] = 'yes'
             return render_template('createcharacter.html', title='Create Character',
                 class_pick=form.classes_list.data, race_pick=form.races_list.data,
                 align_pick=form.alignment_list.data, message='Creating your character:', form2=form2)
-        # otherwise, skip subrace step and start rolling ability scores
+        # otherwise, just start rolling ability scores
         else:
+            # mark subrace step as done so it is not displayed
             if session.get('subraceDone'):
                 session.pop('subraceDone')
             session['subraceDone'] = 'yes'
@@ -111,7 +112,6 @@ def createcharacter():
                 align_pick=form.alignment_list.data, message='Creating your character:', start_rolling='yes')  
     # user has chosen a subrace
     if form2.is_submitted() and session.get('subraceDone') == 'yes':
-        print('reached block 2')
         if form2.subrace1.data:
             subracedata = form2.subrace1.data
         elif form2.subrace2.data:
@@ -126,7 +126,7 @@ def createcharacter():
         if session.get('characterSubrace'):
             session.pop('characterSubrace')
         session['characterSubrace'] = subracedata
-        print(subracedata)
+        #print(subracedata)
         if session.get('subraceDone'):
             session.pop('subraceDone')
         session['subraceDone'] = 'no'
@@ -178,7 +178,6 @@ def ajax_request():
 @login_required
 def createcharacter2():
     form1 = AssignAbilitiesForm()
-    #halfelf_form = HalfElfForm()
     curr_result = None
     curr_subrace_result = None
     # user has assigned each roll to an ability
@@ -255,10 +254,12 @@ def createcharacter2():
                     session[fullname] = currscore + curr_subrace_result.bonus1
             # special choice for half-elves
             if session.get('characterRace') == 'Half-Elf':
-                print('half elf')
-
+                #print('half elf')
+                msg3 = 'You will choose your half-elf bonuses in the next step.'
+            else:
+                msg3 = ''
             return render_template('createcharacter2.html', title='Create Character',
-                success_message=msg1, message2=msg2, currstr=rawstrength, currdex=rawdex,
+                success_message=msg1, message2=msg2, message3=msg3, currstr=rawstrength, currdex=rawdex,
                 currcon=rawconst, currint=rawintel, currwis=rawwisdom, currcha=rawcharisma,
                 finalstr=session.get('Strength'), finaldex=session.get('Dexterity'),
                 finalcon=session.get('Constitution'), finalint=session.get('Intelligence'),
@@ -278,6 +279,83 @@ def createcharacter2():
             assign2=session.get('roll2'), assign3=session.get('roll3'),
             assign4=session.get('roll4'), assign5=session.get('roll5'),
             form1=form1, thisrace=curr_result)
+
+# third step of character creation
+@app.route('/createcharacter3', methods=['GET', 'POST'])
+@login_required
+def createcharacter3():
+    he_form = HalfElfForm()
+    bg_form = ChooseBgForm()
+
+    if not session.get('halfelfBonusDone'):
+        session['halfelfBonusDone'] = 'no'
+    if not session.get('addHalfElfDone'):
+        session['addHalfElfDone'] = 'no'
+
+    if session.get('characterRace') != 'Half-Elf':
+        session['addHalfElfDone'] = 'yes'
+
+    if session.get('characterRace') == 'Half-Elf' and session.get('halfelfBonusDone') == 'no':
+        # mark this step as done
+        #print('block 1 reached')
+        if session.get('halfelfBonusDone'):
+            session.pop('halfelfBonusDone')
+        session['halfelfBonusDone'] = 'yes' 
+        # show half elf bonus selection form
+        return render_template('createcharacter3.html', title='Create Character', form1=he_form)      
+    else:
+        if bg_form.is_submitted() and session.get('addHalfElfDone') == 'yes':
+            #print('block 2 reached')
+            # display stats, class, and race info that is now complete
+            #print(bg_form.data)
+            # save character background to session
+            if bg_form.data['bg_list'] != None:
+                session['background'] = bg_form.data['bg_list']
+            final_msg = 'Great! You can record the following details on your character sheet:'
+            final_msg2 = 'In the next steps, you\'ll choose other skills and equipment.'
+            if session.get('halfelfBonusDone'):
+                session.pop('halfelfBonusDone')
+            session['halfelfBonusDone'] = 'no'
+            if session.get('addHalfElfDone'):
+                session.pop('addHalfElfDone')
+            session['addHalfElfDone'] = 'no'
+            return render_template('createcharacter3.html', title='Create Character',
+                msg2=final_msg, msg3=final_msg2)
+        else:
+            #print('block 2.5 reached')
+            if session.get('characterRace') == 'Half-Elf' and he_form.is_submitted():
+                #print('block 3 reached')
+                #print(he_form.data)
+                chosen_increases = he_form.data['increase_list']
+                #print(chosen_increases)
+                # check if user has picked exactly 2 abilities to increase
+                if chosen_increases != None and len(chosen_increases) == 2:
+                    # increase the two chosen ability scores and save the new scores
+                    first = chosen_increases[0]
+                    second = chosen_increases[1]
+                    ability1 = session.get(first)
+                    ability2 = session.get(second)
+                    if ability1 != None:
+                        session[first] = ability1 + 1
+                    if ability2 != None:
+                        session[second] = ability2 + 1
+
+                    he_msg = 'Here are your final ability scores:'
+                    if session.get('addHalfElfDone'):
+                        session.pop('addHalfElfDone')
+                    session['addHalfElfDone'] = 'yes'
+                    return render_template('createcharacter3.html', title='Create Character',
+                        form2=bg_form, success_message=he_msg, currstr=session.get('Strength'),
+                        currdex=session.get('Dexterity'), currcon=session.get('Constitution'),
+                        currint=session.get('Intelligence'), currwis=session.get('Wisdom'),
+                        currcha=session.get('Charisma'))
+                else:
+                    flash('Please choose exactly 2')
+                    return render_template('createcharacter3.html',
+                        title='Create Character', form1=he_form)
+            # show background selection form
+            return render_template('createcharacter3.html', title='Create Character',
+                    form2=bg_form)
 
 @app.route('/dndraces')
 @login_required

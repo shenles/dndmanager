@@ -206,6 +206,20 @@ class Dndequipment(db.Model):
     normrange = db.Column(db.Integer)
     longrange = db.Column(db.Integer)
 
+class Dndbackground(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True, unique=True)
+    skillprofs = db.Column(db.String(240))
+    toolprofs = db.Column(db.String(240))
+    langs = db.Column(db.String(240))
+    equipment = db.Column(db.String(800))
+    feature = db.Column(db.String(120))
+    #feature_descrip = db.Column(db.String(3200))
+    variant = db.Column(db.String(120))
+    #variant_descrip = db.Column(db.String(3200))
+    variant_feature = db.Column(db.String(120))
+    #variant_feature_descrip = db.Column(db.String(3200))
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

@@ -100,6 +100,11 @@
             <td>{{ finalint }}</td><td>{{ finalwis }}</td><td>{{ finalcha }}</td>
         </tr>
     </table>
+    <a href="{{ url_for('createcharacter3') }}">Continue</a>
     {% endif %}
 
+    {% if message3 %}
+        <p>{{ message3 }}</p>
+    {% endif %}
+    
 {% endblock %}

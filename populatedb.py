@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool
+from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool, Dndbackground
 import requests
 import json
 
@@ -322,7 +322,42 @@ def populateEquipment():
         db.session.add(newdndequipment)
     db.session.commit()
 
-#populateClasses() # done already, do not run again 
+def populateBackgrounds():
+    bg_names = ['Acolyte', 'Charlatan', 'Criminal', 'Entertainer', 'Folk Hero', 'Guild Artisan', 'Hermit', 'Noble', 'Outlander', 'Sage', 'Sailor', 'Soldier', 'Urchin']
+    bg_skillprofs = {'Acolyte': 'Insight, Religion', 'Charlatan': 'Deception, Sleight of Hand', 'Criminal': 'Deception, Stealth', 'Entertainer': 'Acrobatics, Performance', 'Folk Hero': 'Animal Handling, Survival', 'Guild Artisan': 'Insight, Persuasion', 'Hermit': 'Medicine, Religion', 'Noble': 'History, Persuasion', 'Outlander': 'Athletics, Survival', 'Sage': 'Arcana, History', 'Sailor': 'Athletics, Persuasion', 'Soldier': 'Athletics, Intimidation', 'Urchin': 'Sleight of Hand, Stealth'}
+    bg_toolprofs = {'Acolyte': '', 'Charlatan': 'disguise kit, forgery kit', 'Criminal': 'one type of gaming set, thieve\'s tools', 'Entertainer': 'disguise kit, one type of musical instrument', 'Folk Hero': 'one type of artisan\'s tools, vehicles (land)', 'Guild Artisan': 'one type of artisan\'s tools', 'Hermit': 'herbalism kit', 'Noble': 'one type of gaming set', 'Outlander': 'one type of musical instrument', 'Sage': '', 'Sailor': 'navigator\'s tools, vehicles (water)', 'Soldier': 'one type of gaming set, vehicles (land)', 'Urchin': 'disguise kit, thieve\'s tools'}
+    bg_langs = {'Acolyte': 'two of your choice', 'Charlatan': '', 'Criminal': '', 'Entertainer': '', 'Folk Hero': '', 'Guild Artisan': 'one of your choice', 'Hermit': 'one of your choice', 'Noble': 'one of your choice', 'Outlander': 'one of your choice', 'Sage': 'two of your choice', 'Sailor': '', 'Soldier': '', 'Urchin': ''}
+    bg_equipment = {'Acolyte': 'holy symbol, prayer book or prayer wheel, 5 sticks incense, vestments, set of common clothes, pouch with 15 gp', 'Charlatan': 'set of fine clothes, disguise kit, tools of con of your choice (10 stoppered bottles of colored liquid, set of weighted dice, deck of marked cards, or signet ring of an imaginary duke), pouch with 15 gp', 'Criminal': 'crowbar, set of dark common clothes including a hood, pouch with 15 gp', 'Entertainer': '1 musical instrument of your choice, token from an admirer (love letter, lock of hair, or trinket), costume, pouch with 15 gp', 'Folk Hero': 'set of artisan\'s tools (1 of your choice), shovel, iron pot, set of common clothes, pouch with 10 gp', 'Guild Artisan': 'set of artisan\'s tools (1 of your choice), letter of introduction from your guild, set of traveler\'s clothes, pouch with 15 gp', 'Hermit': 'scroll case with notes from studies or prayers, winter blanket, set of common clothes, herbalism kit, 5 gp', 'Noble': 'set of fine clothes, signet ring, scroll of pedigree, purse with 25 gp', 'Outlander': 'staff, hunting trap, trophy from an animal you killed, set of traveler\'s clothes, pouch with 10 gp', 'Sage': 'bottle of black ink, quill, small knife, letter from your dead colleague posing a question you have not been able to answer, set of common clothes, pouch with 10 gp', 'Sailor': 'belaying pin (club), 50 ft silk rope, lucky charm (e.g. rabbit foot, small stone with hole in center, set of common clothes, pouch with 10 gp', 'Soldier': 'insignia of rank, trophy from a fallen enemy (dagger, broken blade, piece of a banner), set of bone dice or deck of cards, set of common clothes, pouch with 10 gp', 'Urchin': 'small knife, map of city you grew up in, pet mouse, token to remember your parents by, set of common clothes, pouch with 10 gp'}
+    bg_variants = {'Acolyte': '', 'Charlatan': '', 'Criminal': 'Spy', 'Entertainer': 'Gladiator', 'Folk Hero': '', 'Guild Artisan': 'Guild Merchant', 'Hermit': '', 'Noble': '', 'Outlander': '', 'Sage': '', 'Sailor': 'Pirate', 'Soldier': '', 'Urchin': ''}
+    bg_features = {'Acolyte': 'Shelter of the Faithful', 'Charlatan': 'False Identity', 'Criminal': 'Criminal Contact', 'Entertainer': 'By Popular Demand', 'Folk Hero': 'Rustic Hospitality', 'Guild Artisan': 'Guild Membership', 'Hermit': 'Discovery', 'Noble': 'Position of Privilege', 'Outlander': 'Wanderer', 'Sage': 'Researcher', 'Sailor': 'Ship\'s Passage', 'Soldier': 'Military Rank', 'Urchin': 'City Secrets'}
+    variant_features = {'Sailor': 'Bad Reputation'}
+
+    for bg in bg_names:
+        curr_bgskills, curr_bgtools, curr_bglangs, curr_bgequip = '', '', '', ''
+        curr_bgfeature, curr_bgvariant, curr_variant_feature = '', '', ''
+
+        if bg in bg_skillprofs:
+            curr_bgskills = bg_skillprofs[bg]
+        if bg in bg_toolprofs:
+            curr_bgtools = bg_toolprofs[bg]
+        if bg in bg_langs:
+            curr_bglangs = bg_langs[bg]
+        if bg in bg_equipment:
+            curr_bgequip = bg_equipment[bg]
+        if bg in bg_variants:
+            curr_bgvariant = bg_variants[bg]
+        if bg in bg_features:
+            curr_bgfeature = bg_features[bg]
+        if bg in variant_features:
+            curr_variant_feature = variant_features[bg]
+
+        newdndbg = Dndbackground(name=bg, skillprofs=curr_bgskills, toolprofs=curr_bgtools,
+            langs=curr_bglangs, equipment=curr_bgequip,
+            feature=curr_bgfeature, variant=curr_bgvariant, variant_feature=curr_variant_feature)
+        db.session.add(newdndbg)
+    db.session.commit()
+
+#populateClasses() # done, do not run again 
 #populateSpells() # done
 #populateSpellLevels() # done
 #populateSpellClasses() # done
@@ -330,3 +365,5 @@ def populateEquipment():
 #populateRaces() # done
 #populateSubraces() # done
 #populateEquipment() # done
+#populateBackgrounds() # done
+#populateFeatures()
