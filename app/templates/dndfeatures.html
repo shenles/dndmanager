@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Features</h1>
+    <div>
+    {% if allfeatures %}
+    <table>
+        <tr><th>Name</th><th>Class</th><th>Subclass</th>
+        <th>Level</th><th>Number of choices</th><th>Choice options</th>
+        <th>Description</th>
+        <th>Feature group</th>
+        </tr> 
+        {% for feat in allfeatures %}
+        <tr>
+            <td>{{ feat.name }}</td><td>{{ feat.fclass }}</td><td>{{ feat.fsubclass }}</td>
+            <td>{{ feat.level }}</td><td>{{ feat.numoptions  }}</td>
+            <td>{{ feat.choiceoptions  }}</td><td>{{ feat.description }}</td>
+            <td>{{ feat.fgroup }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+{% endblock %}

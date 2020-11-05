@@ -5,7 +5,7 @@ from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm
 from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -358,6 +358,12 @@ def createcharacter3():
 def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
+
+@app.route('/dndfeatures')
+@login_required
+def dndfeatures():
+    ddfeatures = Dndfeature.query.all()
+    return render_template('dndfeatures.html', title='D&D Features', allfeatures=ddfeatures)
 
 @app.route('/dndbackgrounds')
 @login_required

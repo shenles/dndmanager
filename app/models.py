@@ -220,6 +220,18 @@ class Dndbackground(db.Model):
     variant_feature = db.Column(db.String(120))
     #variant_feature_descrip = db.Column(db.String(3200))
 
+class Dndfeature(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(240), index=True)
+    description = db.Column(db.String(6400))
+    numoptions = db.Column(db.Integer)
+    choiceoptions = db.Column(db.String(6400))
+    fclass = db.Column(db.String(240))
+    fsubclass = db.Column(db.String(240))
+    level = db.Column(db.Integer)
+    fgroup = db.Column(db.String(240))
+    prereq = db.Column(db.String(900))
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

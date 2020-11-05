@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool, Dndbackground
+from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool, Dndbackground, Dndfeature
 import requests
 import json
 
@@ -103,14 +103,14 @@ def populateSpellLevels():
     db.session.commit()
 
 def populateSpellClasses():
-    caster_classes = ['Bard', 'Cleric', 'Druid', 'Paladin', 'Sorcerer', 'Ranger', 'Warlock', 'Wizard']
+    caster_classes = ["Bard", "Cleric", "Druid", "Paladin", "Sorcerer", "Ranger", "Warlock", "Wizard"]
     for currnum in range(len(caster_classes)):
         spell_class = SpellClass(id=currnum+1, name=caster_classes[currnum])
         db.session.add(spell_class)
     db.session.commit()
 
 def populateSpellSchools():
-    magic_schools = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation']
+    magic_schools = ["Abjuration", "Conjuration", "Divination", "Enchantment", "Evocation", "Illusion", "Necromancy", "Transmutation"]
     for currnum in range(len(magic_schools)):
         spell_school = SpellSchool(id=currnum+1, name=magic_schools[currnum])
         db.session.add(spell_school)
@@ -118,13 +118,13 @@ def populateSpellSchools():
 
 # pull races info from API to populate Dndrace table
 def populateRaces():
-    url = 'https://www.dnd5eapi.co/api/races'
+    url = "https://www.dnd5eapi.co/api/races"
     r = requests.get(url).content
     rj = json.loads(r)
 
     for item in rj["results"]:
         currname = item["name"] # e.g. "Human"
-        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/races/human"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/races/human"
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
         currspeed = curr_rj["speed"] # e.g. 30
@@ -216,13 +216,13 @@ def populateRaces():
 
 # pull info from API to populate Dndsubrace table
 def populateSubraces():
-    url = 'https://www.dnd5eapi.co/api/subraces'
+    url = "https://www.dnd5eapi.co/api/subraces"
     r = requests.get(url).content
     rj = json.loads(r)
 
     for item in rj["results"]:
         currname = item["name"] # e.g. "High Elf"
-        currurl = 'https://www.dnd5eapi.co' + item["url"]
+        currurl = "https://www.dnd5eapi.co" + item["url"]
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
         assoc_race = curr_rj["race"]["name"] # e.g. "Elf"
@@ -257,13 +257,13 @@ def populateSubraces():
 
 # pull equipment info from API to populate Dndequipment table
 def populateEquipment():
-    url = 'https://www.dnd5eapi.co/api/equipment'
+    url = "https://www.dnd5eapi.co/api/equipment"
     r = requests.get(url).content
     rj = json.loads(r)
 
     for item in rj["results"]:
         currname = item["name"] # e.g. "Dagger" or "Soap"
-        currurl = 'https://www.dnd5eapi.co' + item["url"] # e.g. "/api/equipment/dagger"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/equipment/dagger"
         curr_r = requests.get(currurl).content
         curr_rj = json.loads(curr_r)
         currtype = curr_rj["equipment_category"]["name"] # e.g. "Weapon" or "Adventuring Gear"
@@ -322,19 +322,72 @@ def populateEquipment():
         db.session.add(newdndequipment)
     db.session.commit()
 
+# pull features info from API to populate Dndfeatures table
+def populateFeatures():
+    url = "https://www.dnd5eapi.co/api/features"
+    r = requests.get(url).content
+    rj = json.loads(r)
+
+    for item in rj["results"]:
+        currname = item["name"] # e.g. "Channel Divinity"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/features/channel-divinity"
+        curr_r = requests.get(currurl).content
+        curr_rj = json.loads(curr_r)
+
+        feature_descrip, feature_class, feature_group, feature_subclass = "", "", "", ""
+        feature_lvl = None
+        numchoices = 0
+        choices, all_prereqs = "", ""
+        if "desc" in curr_rj:
+            feature_descrip = ", ".join(curr_rj["desc"])
+        if "class" in curr_rj:
+            if "name" in curr_rj["class"]:
+                feature_class = curr_rj["class"]["name"]
+        if "subclass" in curr_rj:
+            if "name" in curr_rj["subclass"]:
+                feature_subclass = curr_rj["subclass"]["name"]
+        if "level" in curr_rj:
+            feature_lvl = curr_rj["level"]
+        if "group" in curr_rj:
+            feature_group = curr_rj["group"]
+        if "choice" in curr_rj:
+            if "choose" in curr_rj["choice"]:
+                numchoices = curr_rj["choice"]["choose"]
+            if "from" in curr_rj["choice"]:
+                choicelist = [x["name"] for x in curr_rj["choice"]["from"]]
+                choices = ", ".join(choicelist)
+        if "prerequisites" in curr_rj:
+            for prereq in curr_rj["prerequisites"]:
+                currptype = prereq["type"]
+                all_prereqs = all_prereqs + currptype + ": "
+                if "proficiency" in prereq:
+                    if "api/proficiencies/" in prereq["proficiency"]:
+                        proflist = prereq["proficiency"].split("api/proficiencies/")
+                        req_prof = proflist[len(proflist)-1]
+                        all_prereqs = all_prereqs + req_prof + ". "
+                elif "level" in prereq:
+                    levelstr = str(prereq["level"])
+                    all_prereqs = all_prereqs + levelstr + ". "
+
+        newdndfeature = Dndfeature(name=currname, description=feature_descrip,
+            numoptions=numchoices, choiceoptions=choices, fclass=feature_class,
+            fsubclass=feature_subclass, level=feature_lvl, fgroup=feature_group)
+        db.session.add(newdndfeature)
+    db.session.commit()
+
 def populateBackgrounds():
-    bg_names = ['Acolyte', 'Charlatan', 'Criminal', 'Entertainer', 'Folk Hero', 'Guild Artisan', 'Hermit', 'Noble', 'Outlander', 'Sage', 'Sailor', 'Soldier', 'Urchin']
-    bg_skillprofs = {'Acolyte': 'Insight, Religion', 'Charlatan': 'Deception, Sleight of Hand', 'Criminal': 'Deception, Stealth', 'Entertainer': 'Acrobatics, Performance', 'Folk Hero': 'Animal Handling, Survival', 'Guild Artisan': 'Insight, Persuasion', 'Hermit': 'Medicine, Religion', 'Noble': 'History, Persuasion', 'Outlander': 'Athletics, Survival', 'Sage': 'Arcana, History', 'Sailor': 'Athletics, Persuasion', 'Soldier': 'Athletics, Intimidation', 'Urchin': 'Sleight of Hand, Stealth'}
-    bg_toolprofs = {'Acolyte': '', 'Charlatan': 'disguise kit, forgery kit', 'Criminal': 'one type of gaming set, thieve\'s tools', 'Entertainer': 'disguise kit, one type of musical instrument', 'Folk Hero': 'one type of artisan\'s tools, vehicles (land)', 'Guild Artisan': 'one type of artisan\'s tools', 'Hermit': 'herbalism kit', 'Noble': 'one type of gaming set', 'Outlander': 'one type of musical instrument', 'Sage': '', 'Sailor': 'navigator\'s tools, vehicles (water)', 'Soldier': 'one type of gaming set, vehicles (land)', 'Urchin': 'disguise kit, thieve\'s tools'}
-    bg_langs = {'Acolyte': 'two of your choice', 'Charlatan': '', 'Criminal': '', 'Entertainer': '', 'Folk Hero': '', 'Guild Artisan': 'one of your choice', 'Hermit': 'one of your choice', 'Noble': 'one of your choice', 'Outlander': 'one of your choice', 'Sage': 'two of your choice', 'Sailor': '', 'Soldier': '', 'Urchin': ''}
-    bg_equipment = {'Acolyte': 'holy symbol, prayer book or prayer wheel, 5 sticks incense, vestments, set of common clothes, pouch with 15 gp', 'Charlatan': 'set of fine clothes, disguise kit, tools of con of your choice (10 stoppered bottles of colored liquid, set of weighted dice, deck of marked cards, or signet ring of an imaginary duke), pouch with 15 gp', 'Criminal': 'crowbar, set of dark common clothes including a hood, pouch with 15 gp', 'Entertainer': '1 musical instrument of your choice, token from an admirer (love letter, lock of hair, or trinket), costume, pouch with 15 gp', 'Folk Hero': 'set of artisan\'s tools (1 of your choice), shovel, iron pot, set of common clothes, pouch with 10 gp', 'Guild Artisan': 'set of artisan\'s tools (1 of your choice), letter of introduction from your guild, set of traveler\'s clothes, pouch with 15 gp', 'Hermit': 'scroll case with notes from studies or prayers, winter blanket, set of common clothes, herbalism kit, 5 gp', 'Noble': 'set of fine clothes, signet ring, scroll of pedigree, purse with 25 gp', 'Outlander': 'staff, hunting trap, trophy from an animal you killed, set of traveler\'s clothes, pouch with 10 gp', 'Sage': 'bottle of black ink, quill, small knife, letter from your dead colleague posing a question you have not been able to answer, set of common clothes, pouch with 10 gp', 'Sailor': 'belaying pin (club), 50 ft silk rope, lucky charm (e.g. rabbit foot, small stone with hole in center, set of common clothes, pouch with 10 gp', 'Soldier': 'insignia of rank, trophy from a fallen enemy (dagger, broken blade, piece of a banner), set of bone dice or deck of cards, set of common clothes, pouch with 10 gp', 'Urchin': 'small knife, map of city you grew up in, pet mouse, token to remember your parents by, set of common clothes, pouch with 10 gp'}
-    bg_variants = {'Acolyte': '', 'Charlatan': '', 'Criminal': 'Spy', 'Entertainer': 'Gladiator', 'Folk Hero': '', 'Guild Artisan': 'Guild Merchant', 'Hermit': '', 'Noble': '', 'Outlander': '', 'Sage': '', 'Sailor': 'Pirate', 'Soldier': '', 'Urchin': ''}
-    bg_features = {'Acolyte': 'Shelter of the Faithful', 'Charlatan': 'False Identity', 'Criminal': 'Criminal Contact', 'Entertainer': 'By Popular Demand', 'Folk Hero': 'Rustic Hospitality', 'Guild Artisan': 'Guild Membership', 'Hermit': 'Discovery', 'Noble': 'Position of Privilege', 'Outlander': 'Wanderer', 'Sage': 'Researcher', 'Sailor': 'Ship\'s Passage', 'Soldier': 'Military Rank', 'Urchin': 'City Secrets'}
-    variant_features = {'Sailor': 'Bad Reputation'}
+    bg_names = ["Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero", "Guild Artisan", "Hermit", "Noble", "Outlander", "Sage", "Sailor", "Soldier", "Urchin"]
+    bg_skillprofs = {"Acolyte": "Insight, Religion", "Charlatan": "Deception, Sleight of Hand", "Criminal": "Deception, Stealth", "Entertainer": "Acrobatics, Performance", "Folk Hero": "Animal Handling, Survival", "Guild Artisan": "Insight, Persuasion", "Hermit": "Medicine, Religion", "Noble": "History, Persuasion", "Outlander": "Athletics, Survival", "Sage": "Arcana, History", "Sailor": "Athletics, Persuasion", "Soldier": "Athletics, Intimidation", "Urchin": "Sleight of Hand, Stealth"}
+    bg_toolprofs = {"Acolyte": "", "Charlatan": "disguise kit, forgery kit", "Criminal": "one type of gaming set, thieve\'s tools", "Entertainer": "disguise kit, one type of musical instrument", "Folk Hero": "one type of artisan\'s tools, vehicles (land)", "Guild Artisan": "one type of artisan\'s tools", "Hermit": "herbalism kit", "Noble": "one type of gaming set", "Outlander": "one type of musical instrument", "Sage": "", "Sailor": "navigator\'s tools, vehicles (water)", "Soldier": "one type of gaming set, vehicles (land)", "Urchin": "disguise kit, thieve\'s tools"}
+    bg_langs = {"Acolyte": "two of your choice", "Charlatan": "", "Criminal": "", "Entertainer": "", "Folk Hero": "", "Guild Artisan": "one of your choice", "Hermit": "one of your choice", "Noble": "one of your choice", "Outlander": "one of your choice", "Sage": "two of your choice", "Sailor": "", "Soldier": "", "Urchin": ""}
+    bg_equipment = {"Acolyte": "holy symbol, prayer book or prayer wheel, 5 sticks incense, vestments, set of common clothes, pouch with 15 gp", "Charlatan": "set of fine clothes, disguise kit, tools of con of your choice (10 stoppered bottles of colored liquid, set of weighted dice, deck of marked cards, or signet ring of an imaginary duke), pouch with 15 gp", "Criminal": "crowbar, set of dark common clothes including a hood, pouch with 15 gp", "Entertainer": "1 musical instrument of your choice, token from an admirer (love letter, lock of hair, or trinket), costume, pouch with 15 gp", "Folk Hero": "set of artisan\'s tools (1 of your choice), shovel, iron pot, set of common clothes, pouch with 10 gp", "Guild Artisan": "set of artisan\'s tools (1 of your choice), letter of introduction from your guild, set of traveler\'s clothes, pouch with 15 gp", "Hermit": "scroll case with notes from studies or prayers, winter blanket, set of common clothes, herbalism kit, 5 gp", "Noble": "set of fine clothes, signet ring, scroll of pedigree, purse with 25 gp", "Outlander": "staff, hunting trap, trophy from an animal you killed, set of traveler\'s clothes, pouch with 10 gp", "Sage": "bottle of black ink, quill, small knife, letter from your dead colleague posing a question you have not been able to answer, set of common clothes, pouch with 10 gp", "Sailor": "belaying pin (club), 50 ft silk rope, lucky charm (e.g. rabbit foot, small stone with hole in center, set of common clothes, pouch with 10 gp", "Soldier": "Insignia of rank, trophy from a fallen enemy (dagger, broken blade, piece of a banner), set of bone dice or deck of cards, set of common clothes, pouch with 10 gp", "Urchin": "small knife, map of city you grew up in, pet mouse, token to remember your parents by, set of common clothes, pouch with 10 gp"}
+    bg_variants = {"Acolyte": "", "Charlatan": "", "Criminal": "Spy", "Entertainer": "Gladiator", "Folk Hero": "", "Guild Artisan": "Guild Merchant", "Hermit": "", "Noble": "", "Outlander": "", "Sage": "", "Sailor": "Pirate", "Soldier": "", "Urchin": ""}
+    bg_features = {"Acolyte": "Shelter of the Faithful", "Charlatan": "False Identity", "Criminal": "Criminal Contact", "Entertainer": "By Popular Demand", "Folk Hero": "Rustic Hospitality", "Guild Artisan": "Guild Membership", "Hermit": "Discovery", "Noble": "Position of Privilege", "Outlander": "Wanderer", "Sage": "Researcher", "Sailor": "Ship\'s Passage", "Soldier": "Military Rank", "Urchin": "City Secrets"}
+    variant_features = {"Sailor": "Bad Reputation"}
 
     for bg in bg_names:
-        curr_bgskills, curr_bgtools, curr_bglangs, curr_bgequip = '', '', '', ''
-        curr_bgfeature, curr_bgvariant, curr_variant_feature = '', '', ''
+        curr_bgskills, curr_bgtools, curr_bglangs, curr_bgequip = "", "", "", ""
+        curr_bgfeature, curr_bgvariant, curr_variant_feature = "", "", ""
 
         if bg in bg_skillprofs:
             curr_bgskills = bg_skillprofs[bg]
@@ -366,4 +419,4 @@ def populateBackgrounds():
 #populateSubraces() # done
 #populateEquipment() # done
 #populateBackgrounds() # done
-#populateFeatures()
+populateFeatures()
