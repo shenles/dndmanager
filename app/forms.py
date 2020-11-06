@@ -89,6 +89,11 @@ class SpellFilterForm(FlaskForm):
     school_list = MultiCheckboxField('School', choices=[(s, s) for s in school_choices])
     submit = SubmitField('Submit')
 
+class FeatureFilterForm(FlaskForm):
+    fclasses = ['Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard']
+    fclass_list = RadioField('Class', choices=fclasses) 
+    submit = SubmitField('Submit')
+
 class EquipFilterForm(FlaskForm):
     equip_categories = ['All Adventuring Gear', 'All Tools', 'All Mounts and Vehicles', 'Artisan\'s Tools', 'Equipment Packs', 'Kits', 'Musical Instrument', 'Gaming Sets', 'Druidic Foci', 'Holy Symbols', 'Standard Gear', 'Ammunition'] 
     category_list = RadioField('Category/Subcategory', choices=equip_categories) 

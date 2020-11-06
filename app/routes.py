@@ -2,7 +2,7 @@ from flask import request, render_template, flash, redirect, url_for, session
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm
+from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, FeatureFilterForm
 from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature
@@ -359,11 +359,16 @@ def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
 
-@app.route('/dndfeatures')
+@app.route('/dndfeatures', methods=['GET', 'POST'])
 @login_required
 def dndfeatures():
+    form = FeatureFilterForm()
+    if form.is_submitted():
+        selected_radio = form.fclass_list.data
+        desired_features = Dndfeature.query.filter(Dndfeature.fclass.contains(selected_radio))
+        return render_template('dndfeatures.html', title='D&D Features', form=form, selectedfeatures=desired_features)
     ddfeatures = Dndfeature.query.all()
-    return render_template('dndfeatures.html', title='D&D Features', allfeatures=ddfeatures)
+    return render_template('dndfeatures.html', title='D&D Features', form=form, allfeatures=ddfeatures)
 
 @app.route('/dndbackgrounds')
 @login_required
