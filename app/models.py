@@ -232,6 +232,16 @@ class Dndfeature(db.Model):
     fgroup = db.Column(db.String(240))
     prereq = db.Column(db.String(900))
 
+class Dndtrait(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True)
+    description = db.Column(db.String(6400))
+    races = db.Column(db.String(680))
+    subraces = db.Column(db.String(680))
+    profs = db.Column(db.String(3200))
+    numprofchoices = db.Column(db.Integer)
+    profoptions = db.Column(db.String(3200))
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

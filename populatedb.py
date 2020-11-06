@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool, Dndbackground, Dndfeature
+from app.models import Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, SpellLevel, SpellClass, SpellSchool, Dndbackground, Dndfeature, Dndtrait
 import requests
 import json
 
@@ -375,6 +375,46 @@ def populateFeatures():
         db.session.add(newdndfeature)
     db.session.commit()
 
+# pull traits info from API to populate Dndtraits table
+def populateTraits():
+    url = "https://www.dnd5eapi.co/api/traits"
+    r = requests.get(url).content
+    rj = json.loads(r)
+
+    for item in rj["results"]:
+        currname = item["name"] # e.g. "Darkvision"
+        currurl = "https://www.dnd5eapi.co" + item["url"] # e.g. "/api/traits/darkvision"
+        curr_r = requests.get(currurl).content
+        curr_rj = json.loads(curr_r)
+
+        trait_descrip, trait_race, trait_subrace, trait_profs, p_choices_str = "", "", "", "", ""
+        num_p_choices = None
+        if "desc" in curr_rj:
+            trait_descrip = ", ".join(curr_rj["desc"])
+        if "proficiencies" in curr_rj:
+            if len(curr_rj["proficiencies"]) > 0:
+                trait_plist = [p["name"] for p in curr_rj["proficiencies"]]
+                trait_profs = ", ".join(trait_plist)
+        if "races" in curr_rj:
+            if len(curr_rj["races"]) > 0:
+                trait_racelist = [r["name"] for r in curr_rj["races"]]
+                trait_race = ", ".join(trait_racelist)
+        if "subraces" in curr_rj:
+            if len(curr_rj["subraces"]) > 0:
+                trait_subracelist = [s["name"] for s in curr_rj["subraces"]]
+                trait_subrace = ", ".join(trait_subracelist)
+        if "proficiency_choices" in curr_rj:
+            num_p_choices = curr_rj["proficiency_choices"]["choose"]
+            all_p_choices = [c["name"] for c in curr_rj["proficiency_choices"]["from"]]
+            p_choices_str = ", ".join(all_p_choices)
+
+        newdndtrait = Dndtrait(name=currname, description=trait_descrip,
+            races=trait_race, subraces=trait_subrace, profs=trait_profs,
+            numprofchoices=num_p_choices, profoptions=p_choices_str)
+        db.session.add(newdndtrait)
+    db.session.commit()
+
+# pull backgrounds info from API to populate Dndbackgrounds table
 def populateBackgrounds():
     bg_names = ["Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero", "Guild Artisan", "Hermit", "Noble", "Outlander", "Sage", "Sailor", "Soldier", "Urchin"]
     bg_skillprofs = {"Acolyte": "Insight, Religion", "Charlatan": "Deception, Sleight of Hand", "Criminal": "Deception, Stealth", "Entertainer": "Acrobatics, Performance", "Folk Hero": "Animal Handling, Survival", "Guild Artisan": "Insight, Persuasion", "Hermit": "Medicine, Religion", "Noble": "History, Persuasion", "Outlander": "Athletics, Survival", "Sage": "Arcana, History", "Sailor": "Athletics, Persuasion", "Soldier": "Athletics, Intimidation", "Urchin": "Sleight of Hand, Stealth"}
@@ -420,3 +460,4 @@ def populateBackgrounds():
 #populateEquipment() # done
 #populateBackgrounds() # done
 #populateFeatures()
+#populateTraits()

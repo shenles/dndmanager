@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>D&D Traits</h1>
+
+    <div>
+    {% if alltraits %}
+    <p>Showing all traits</p>
+    <table>
+        <tr><th>Trait</th><th>Races</th><th>Subraces</th>
+        <th>Proficiencies</th><th>Additional choices</th><th>Choice options</th>
+        <th>Description</th>
+        </tr> 
+        {% for trait in alltraits %}
+        <tr>
+            <td>{{ trait.name }}</td><td>{{ trait.races }}</td><td>{{ trait.subraces }}</td>
+            <td>{{ trait.profs }}</td><td>{{ trait.numprofchoices  }}</td>
+            <td>{{ trait.profoptions  }}</td><td>{{ trait.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    </div>
+
+{% endblock %}

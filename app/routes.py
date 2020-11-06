@@ -5,7 +5,7 @@ from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, FeatureFilterForm
 from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature, Dndtrait
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -309,8 +309,8 @@ def createcharacter3():
             # save character background to session
             if bg_form.data['bg_list'] != None:
                 session['background'] = bg_form.data['bg_list']
-            final_msg = 'Great! You can record the following details on your character sheet:'
-            final_msg2 = 'In the next steps, you\'ll choose other skills and equipment.'
+            final_msg = 'Great! You\'re close to being done.'
+            final_msg2 = 'In the next step, you\'ll make a few more choices about your character.'
             if session.get('halfelfBonusDone'):
                 session.pop('halfelfBonusDone')
             session['halfelfBonusDone'] = 'no'
@@ -353,11 +353,26 @@ def createcharacter3():
             return render_template('createcharacter3.html', title='Create Character',
                     form2=bg_form)
 
+# 4th step of character creation
+@app.route('/createcharacter4', methods=['GET', 'POST'])
+@login_required
+def createcharacter4():
+    # start at level 1
+    if not session.get('characterLevel'):
+        session['characterLevel'] = 1
+    return render_template('createcharacter4.html', title='Create Character')
+
 @app.route('/dndraces')
 @login_required
 def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
+
+@app.route('/dndtraits')
+@login_required
+def dndtraits():
+    ddtraits = Dndtrait.query.all()
+    return render_template('dndtraits.html', title='D&D Traits', alltraits=ddtraits)
 
 @app.route('/dndfeatures', methods=['GET', 'POST'])
 @login_required
