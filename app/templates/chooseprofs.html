@@ -5,18 +5,25 @@
     <h1>Creating your character</h1>
 
         {% if form1 and num1 %}
-        <div>
-          <p>Choose {{ num1 }} proficiencies from this list:</p>
-          <form method="post">
-              {{ form1.hidden_tag() }}
-              {{ form1.field1 }}
-              <button type="submit">Submit</button>
-          </form>
-        </div>
+
+            {% if msg1 and (msg2 and profs_str) %}
+                <p>{{ msg1 }}</p>
+                <p>{{ profs_str }}</p>
+                <p>{{ msg2 }}</p>
+            {% endif %}
+
+	        <div>
+	          <p>Choose {{ num1 }} proficiencies from this list:</p>
+	          <form method="post">
+	              {{ form1.hidden_tag() }}
+	              {{ form1.field1 }}
+	              <button type="submit">Submit</button>
+	          </form>
+	        </div>
         {% endif %}
 
-        {% if msg1 %}
-            {{ msg1 }}
+        {% if msg3 %}
+            {{ msg3 }}
             <a href="{{ url_for('index') }}">Continue</a>
         {% endif %}
 

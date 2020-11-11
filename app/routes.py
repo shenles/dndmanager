@@ -362,16 +362,28 @@ def chooseprofs():
     if not session.get('characterLevel'):
         session['characterLevel'] = 1
     # display existing proficiencies
-    profmsg1 = 'You have the following proficiencies from your class:'
-    profmsg2 = 'You have the following proficiencies from your race:'
-    profmsg3 = 'You have the following proficiencies from your background:'
+    profmsg1 = 'You have the following proficiencies from your class/race/background:'
+    bgskills = []
+    if session.get('background'):
+        currbg = session.get('background')
+        getbg = Dndbackground.query.filter_by(name=currbg).first()
+        bgskills = getbg.skillprofs.split(', ')
+        bgtools = getbg.toolprofs.split(', ')
+        bgskills.extend(bgtools)
+    if session.get('characterRace'):
+        curr_race = session.get('characterRace')
+        getrace = Dndrace.query.filter_by(name=curr_race).first()
+        rskills = getrace.startingprofs.split(', ')
+        bgskills.extend(rskills)
     # let user choose additional proficiencies
-    profmsg4 = 'Please choose additional proficiencies below.'
+    profmsg2 = 'Please choose additional proficiencies below.'
     if session.get('characterClass'):
         currentclass = session.get('characterClass')
         getclass = Dndclass.query.filter_by(name=currentclass).first()
         classidx = getclass.id
         numchoices1 = getclass.num_pchoices
+        cskills = getclass.armweapprofs.split(', ')
+        bgskills.extend(cskills)
     else:
         classidx = -1
         numchoices1 = 0
@@ -402,17 +414,19 @@ def chooseprofs():
         form1 = ChooseProfForm1_12()
 
     if form1 and not form1.is_submitted():
-        return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
+        profstring = ', '.join(bgskills)
+        return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1,
+            msg1=profmsg1, msg2=profmsg2, profs_str=profstring)
     elif form1 and form1.is_submitted():
         chosen_profs = form1.data['field1']
-        print(chosen_profs)
+        #print(chosen_profs)
         msg1 = 'Great! Click Continue to proceed.'
         # notify user if user has not chosen correct number of proficiencies
         if len(chosen_profs) != numchoices1:
             flash('Please choose exactly ' + str(numchoices1))
             return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
         else:
-            return render_template('chooseprofs.html', title='Create Character', msg1=msg1)
+            return render_template('chooseprofs.html', title='Create Character', msg3=msg1)
 
 @app.route('/dndraces')
 @login_required
