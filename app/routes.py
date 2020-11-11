@@ -4,6 +4,8 @@ from app import app, db
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, FeatureFilterForm
 from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
+from app.forms import ChooseProfForm1_1, ChooseProfForm1_2, ChooseProfForm1_3, ChooseProfForm1_4, ChooseProfForm1_5, ChooseProfForm1_6
+from app.forms import ChooseProfForm1_7, ChooseProfForm1_8, ChooseProfForm1_9, ChooseProfForm1_10, ChooseProfForm1_11, ChooseProfForm1_12
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature, Dndtrait
 
@@ -305,7 +307,6 @@ def createcharacter3():
     else:
         if bg_form.is_submitted() and session.get('addHalfElfDone') == 'yes':
             # display stats, class, and race info that is now complete
-            #print(bg_form.data)
             # save character background to session
             if bg_form.data['bg_list'] != None:
                 session['background'] = bg_form.data['bg_list']
@@ -354,13 +355,64 @@ def createcharacter3():
                     form2=bg_form)
 
 # 4th step of character creation
-@app.route('/createcharacter4', methods=['GET', 'POST'])
+@app.route('/chooseprofs', methods=['GET', 'POST'])
 @login_required
-def createcharacter4():
+def chooseprofs():
     # start at level 1
     if not session.get('characterLevel'):
         session['characterLevel'] = 1
-    return render_template('createcharacter4.html', title='Create Character')
+    # display existing proficiencies
+    profmsg1 = 'You have the following proficiencies from your class:'
+    profmsg2 = 'You have the following proficiencies from your race:'
+    profmsg3 = 'You have the following proficiencies from your background:'
+    # let user choose additional proficiencies
+    profmsg4 = 'Please choose additional proficiencies below.'
+    if session.get('characterClass'):
+        currentclass = session.get('characterClass')
+        getclass = Dndclass.query.filter_by(name=currentclass).first()
+        classidx = getclass.id
+        numchoices1 = getclass.num_pchoices
+    else:
+        classidx = -1
+        numchoices1 = 0
+    # display correct option list depending on chosen class
+    if classidx == 1:
+        form1 = ChooseProfForm1_1()
+    elif classidx == 2:
+        form1 = ChooseProfForm1_2()
+    elif classidx == 3:
+        form1 = ChooseProfForm1_3()
+    elif classidx == 4:
+        form1 = ChooseProfForm1_4()
+    elif classidx == 5:
+        form1 = ChooseProfForm1_5()
+    elif classidx == 6:
+        form1 = ChooseProfForm1_6()
+    elif classidx == 7:
+        form1 = ChooseProfForm1_7()
+    elif classidx == 8:
+        form1 = ChooseProfForm1_8()
+    elif classidx == 9:
+        form1 = ChooseProfForm1_9()
+    elif classidx == 10:
+        form1 = ChooseProfForm1_10()
+    elif classidx == 11:
+        form1 = ChooseProfForm1_11()
+    elif classidx == 12:
+        form1 = ChooseProfForm1_12()
+
+    if form1 and not form1.is_submitted():
+        return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
+    elif form1 and form1.is_submitted():
+        chosen_profs = form1.data['field1']
+        print(chosen_profs)
+        msg1 = 'Great! Click Continue to proceed.'
+        # notify user if user has not chosen correct number of proficiencies
+        if len(chosen_profs) != numchoices1:
+            flash('Please choose exactly ' + str(numchoices1))
+            return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
+        else:
+            return render_template('chooseprofs.html', title='Create Character', msg1=msg1)
 
 @app.route('/dndraces')
 @login_required
