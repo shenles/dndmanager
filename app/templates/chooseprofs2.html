@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Creating your character</h1>
+
+        {% if form2 and num2 %}
+
+            {% if msg1 and (msg2 and currentprofs) %}
+                <p>{{ msg1 }}</p>
+                <p>{{ currentprofs }}</p>
+                <p>{{ msg2 }}</p>
+                <p>{{ recentchoices }}</p>
+                <p>{{ msg3 }}</p>
+            {% endif %}
+
+	        <div>
+	          <p>Choose {{ num2 }} proficiencies from this list:</p>
+	          <form method="post">
+	              {{ form2.hidden_tag() }}
+	              {{ form2.field1 }}
+	              <button type="submit">Submit</button>
+	          </form>
+	        </div>
+        {% endif %}
+
+        {% if msg4 %}
+            {{ msg4 }}
+            {% if num3 > 0 %}
+                <a href="{{ url_for('chooseprofs3') }}">Continue</a>
+            {% else %}
+                <a href="{{ url_for('index') }}">Continue</a>
+            {% endif %}
+        {% endif %}
+
+{% endblock %}

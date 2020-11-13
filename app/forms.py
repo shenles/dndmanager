@@ -173,20 +173,20 @@ class ChooseProfForm1_12(FlaskForm):
     field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
     submit = SubmitField('Submit')
 
-class ChooseProfForm2(FlaskForm):
-    numchoices2 = Dndclass.query.with_entities(Dndclass.num_pchoices_two).all()
-    choices2 = Dndclass.query.with_entities(Dndclass.profchoices_two).all()
-    allnums2 = [x[0] for x in numchoices2]
-    allchoices2 = [c[0] for c in choices2]
-    field2 = MultiCheckboxField('Proficiency options, set #2', choices=allchoices2)
+class ChooseProfForm2_1(FlaskForm):
+    choices1 = Dndclass.query.filter_by(id=2).first()
+    allchoices1 = choices1.profchoices_two
+    listchoices = allchoices1.split(', ')
+    listchoices1 = [(x, x) for x in listchoices]
+    field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
     submit = SubmitField('Submit')
 
-class ChooseProfForm3(FlaskForm):
-    numchoices3 = Dndclass.query.with_entities(Dndclass.num_pchoices_three).all()
-    choices3 = Dndclass.query.with_entities(Dndclass.profchoices_three).all()
-    allnums3 = [x[0] for x in numchoices3]
-    allchoices3 = [c[0] for c in choices3]
-    field3 = MultiCheckboxField('Proficiency options, set #3', choices=allchoices3)
+class ChooseProfForm2_2(FlaskForm):
+    choices1 = Dndclass.query.filter_by(id=6).first()
+    allchoices1 = choices1.profchoices_two
+    listchoices = allchoices1.split(', ')
+    listchoices1 = [(x, x) for x in listchoices]
+    field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
     submit = SubmitField('Submit')
 
 class SpellFilterForm(FlaskForm):

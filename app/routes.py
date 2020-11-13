@@ -3,7 +3,7 @@ from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
 from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, FeatureFilterForm
-from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm
+from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm, ChooseProfForm2_1, ChooseProfForm2_2
 from app.forms import ChooseProfForm1_1, ChooseProfForm1_2, ChooseProfForm1_3, ChooseProfForm1_4, ChooseProfForm1_5, ChooseProfForm1_6
 from app.forms import ChooseProfForm1_7, ChooseProfForm1_8, ChooseProfForm1_9, ChooseProfForm1_10, ChooseProfForm1_11, ChooseProfForm1_12
 from flask_login import current_user, login_user, logout_user
@@ -361,33 +361,38 @@ def chooseprofs():
     # start at level 1
     if not session.get('characterLevel'):
         session['characterLevel'] = 1
-    # display existing proficiencies
     profmsg1 = 'You have the following proficiencies from your class/race/background:'
+    donemsg1 = 'Great! Click Continue to proceed.'
+    profmsg2 = 'Please choose additional proficiencies below.'
     bgskills = []
+    # retrieve existing proficiencies from bg, race, class
     if session.get('background'):
         currbg = session.get('background')
         getbg = Dndbackground.query.filter_by(name=currbg).first()
-        bgskills = getbg.skillprofs.split(', ')
-        bgtools = getbg.toolprofs.split(', ')
-        bgskills.extend(bgtools)
+        if getbg is not None:
+            bgskills = getbg.skillprofs.split(', ')
+            bgtools = getbg.toolprofs.split(', ')
+            bgskills.extend(bgtools)
     if session.get('characterRace'):
         curr_race = session.get('characterRace')
         getrace = Dndrace.query.filter_by(name=curr_race).first()
-        rskills = getrace.startingprofs.split(', ')
-        bgskills.extend(rskills)
-    # let user choose additional proficiencies
-    profmsg2 = 'Please choose additional proficiencies below.'
+        if getrace is not None:
+            rskills = getrace.startingprofs.split(', ')
+            bgskills.extend(rskills)
     if session.get('characterClass'):
         currentclass = session.get('characterClass')
         getclass = Dndclass.query.filter_by(name=currentclass).first()
-        classidx = getclass.id
-        numchoices1 = getclass.num_pchoices
-        cskills = getclass.armweapprofs.split(', ')
-        bgskills.extend(cskills)
+        if getclass is not None:
+            classidx = getclass.id
+            numchoices1 = getclass.num_pchoices
+            numchoices2 = getclass.num_pchoices_two
+            cskills = getclass.armweapprofs.split(', ')
+            bgskills.extend(cskills)
     else:
         classidx = -1
         numchoices1 = 0
-    # display correct option list depending on chosen class
+        numchoices2 = 0
+    # use correct form depending on chosen class
     if classidx == 1:
         form1 = ChooseProfForm1_1()
     elif classidx == 2:
@@ -419,14 +424,71 @@ def chooseprofs():
             msg1=profmsg1, msg2=profmsg2, profs_str=profstring)
     elif form1 and form1.is_submitted():
         chosen_profs = form1.data['field1']
-        #print(chosen_profs)
-        msg1 = 'Great! Click Continue to proceed.'
         # notify user if user has not chosen correct number of proficiencies
         if len(chosen_profs) != numchoices1:
             flash('Please choose exactly ' + str(numchoices1))
             return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
-        else:
-            return render_template('chooseprofs.html', title='Create Character', msg3=msg1)
+        #print('reached 4: ' + str(numchoices2))
+        # save chosen proficiencies to session
+        session['character_proficiencies'] = [].extend(bgskills)
+        session['chosen_proficiencies'] = [].extend(chosen_profs)
+        return render_template('chooseprofs.html', title='Create Character', msg3=donemsg1, num2=numchoices2)
+    else:
+        return render_template('chooseprofs.html', title='Create Character', msg3=donemsg1, num2=numchoices2)
+
+@app.route('/chooseprofs2', methods=['GET', 'POST'])
+@login_required
+def chooseprofs2():
+    existing_msg = 'You have the following proficiencies from your race/class/background:'
+    chosen_msg = 'You have also added these proficiencies:'
+    choose_msg = 'Please choose additional proficiencies below.'
+    donemsg1 = 'Great! Click Continue to proceed.'
+    profs_str2, chosen_str = '', ''
+    if session.get('characterClass'):
+        currclass = session.get('characterClass')
+        getclass = Dndclass.query.filter_by(name=currclass).first()
+        classidx = getclass.id
+        numchoices2 = getclass.num_pchoices_two
+        numchoices3 = getclass.num_pchoices_three
+    else:
+        classidx = -1
+        numchoices2, numchoices3 = 0, 0
+    # create correct form depending on chosen class
+    if classidx == 2:
+        form2 = ChooseProfForm2_1()
+    elif classidx == 6:
+        form2 = ChooseProfForm2_2()
+    # retrieve existing profiencies and recently selected proficiencies
+    if session.get('character_proficiencies'):
+        existing_profs = session.get('character_proficiencies')
+        profs_str2 = ', '.join(existing_profs)
+    if session.get('chosen_proficiencies'):
+        recent_choices = session.get('chosen_proficiencies')
+        chosen_str = ', '.join(recent_choices)
+
+    if form2 and not form2.is_submitted():
+        return render_template('chooseprofs2.html', title='Create Character', form2=form2,
+            num2=numchoices2, currentprofs=profs_str2, recentchoices=chosen_str, msg1=existing_msg,
+            msg2=chosen_msg, msg3=choose_msg)
+    elif form2 and form2.is_submitted():
+        chosen_profs = form2.data['field1']
+        # notify user if user has not chosen correct number of proficiencies
+        if len(chosen_profs) != numchoices2:
+            flash('Please choose exactly ' + str(numchoices2))
+            return render_template('chooseprofs2.html', title='Create Character', form2=form2, num2=numchoices2)
+        # save new proficiencies to session
+        if session.get('chosen_proficiencies'):
+            existing_chosen = session.get('chosen_proficiencies')
+            new_existing = existing_chosen.extend(chosen_profs)
+            session['chosen_proficiencies'] = new_existing
+        return render_template('chooseprofs2.html', title='Create Character', msg4=donemsg1, num3=numchoices3)
+    else:
+        return render_template('chooseprofs2.html', title='Create Character', msg4=donemsg1, num3=numchoices3)
+
+@app.route('/chooseprofs3', methods=['GET', 'POST'])
+@login_required
+def chooseprofs3():
+    return render_template('chooseprofs3.html', title='Create Character')
 
 @app.route('/dndraces')
 @login_required
