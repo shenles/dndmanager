@@ -189,6 +189,14 @@ class ChooseProfForm2_2(FlaskForm):
     field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
     submit = SubmitField('Submit')
 
+class ChooseProfForm3_1(FlaskForm):
+    choices1 = Dndclass.query.filter_by(id=6).first()
+    allchoices1 = choices1.profchoices_three
+    listchoices = allchoices1.split(', ')
+    listchoices1 = [(x, x) for x in listchoices]
+    field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
+    submit = SubmitField('Submit')
+
 class SpellFilterForm(FlaskForm):
     spell_levels = SpellLevel.query.with_entities(SpellLevel.level).all()
     spell_classes = SpellClass.query.with_entities(SpellClass.name).all()
