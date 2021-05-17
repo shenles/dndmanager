@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import widgets, RadioField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import widgets, RadioField, SelectMultipleField, StringField
+from wtforms import PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, InputRequired, Optional, Email, EqualTo
 from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace, Dndsubrace, Dndbackground
 
@@ -35,9 +36,16 @@ class CreateCharacterForm(FlaskForm):
     race_res = Dndrace.query.with_entities(Dndrace.name).all()
     class_options = [x[0] for x in class_res]
     race_options = [x[0] for x in race_res]
+    type_options = ['PC (Player character)', 'NPC (Non-player character)']
+    type_list = SelectField('Type', choices=type_options)
     races_list = SelectField('Race', choices=race_options)
     classes_list = SelectField('Class', choices=class_options)
-    alignment_options = ['Lawful good', 'Neutral good', 'Chaotic good', 'Lawful neutral', 'Neutral', 'Chaotic neutral', 'Lawful evil', 'Neutral evil', 'Chaotic evil']
+    alignment_options = [
+                            'Lawful good', 'Neutral good', 'Chaotic good',
+                            'Lawful neutral', 'Neutral', 'Chaotic neutral',
+                            'Lawful evil', 'Neutral evil', 'Chaotic evil',
+                            'Other', 'None'
+                        ]
     alignment_list = SelectField('Alignment', choices=alignment_options)
     submit = SubmitField('Submit')
 
@@ -209,6 +217,7 @@ class ChooseLangForm1_1(FlaskForm):
     choices1 = Dndrace.query.filter_by(id=5).first() # Half-Elf
     allchoices1 = choices1.langoptions
     listchoices = allchoices1.split(', ')
+    listchoices.append('Other')
     listchoices1 = [(x, x) for x in listchoices]
     field1 = MultiCheckboxField('Language options', choices=listchoices1)
     submit = SubmitField('Submit')
@@ -217,6 +226,7 @@ class ChooseLangForm1_2(FlaskForm):
     choices1 = Dndrace.query.filter_by(id=8).first() # Human
     allchoices1 = choices1.langoptions
     listchoices = allchoices1.split(', ')
+    listchoices.append('Other')
     listchoices1 = [(x, x) for x in listchoices]
     field1 = MultiCheckboxField('Language options', choices=listchoices1)
     submit = SubmitField('Submit')

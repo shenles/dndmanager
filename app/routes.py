@@ -2,13 +2,16 @@ from flask import request, render_template, flash, redirect, url_for, session
 from werkzeug.urls import url_parse
 from app import app, db
 from flask_login import login_required
-from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm, SpellFilterForm, FeatureFilterForm
-from app.forms import CreateCharacterForm, ChooseSubraceForm, AssignAbilitiesForm, HalfElfForm, ChooseBgForm, ChooseProfForm2_1, ChooseProfForm2_2
-from app.forms import ChooseProfForm1_1, ChooseProfForm1_2, ChooseProfForm1_3, ChooseProfForm1_4, ChooseProfForm1_5, ChooseProfForm1_6
-from app.forms import ChooseProfForm3_1, ChooseProfForm4, ChooseLangForm1_1, ChooseLangForm1_2
-from app.forms import ChooseProfForm1_7, ChooseProfForm1_8, ChooseProfForm1_9, ChooseProfForm1_10, ChooseProfForm1_11, ChooseProfForm1_12
+from app.forms import LoginForm, RegistrationForm, EquipFilterForm, WeaponArmorFilterForm
+from app.forms import SpellFilterForm, FeatureFilterForm, CreateCharacterForm, ChooseSubraceForm
+from app.forms import AssignAbilitiesForm, HalfElfForm, ChooseBgForm, ChooseProfForm2_1, ChooseProfForm2_2
+from app.forms import ChooseProfForm1_1, ChooseProfForm1_2, ChooseProfForm1_3, ChooseProfForm1_4
+from app.forms import ChooseProfForm1_5, ChooseProfForm1_6, ChooseLangForm1_1, ChooseLangForm1_2
+from app.forms import ChooseProfForm3_1, ChooseProfForm4, ChooseProfForm1_7, ChooseProfForm1_8
+from app.forms import ChooseProfForm1_9, ChooseProfForm1_10, ChooseProfForm1_11, ChooseProfForm1_12
 from flask_login import current_user, login_user, logout_user
-from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace, Dndequipment, Dndbackground, Dndfeature, Dndtrait
+from app.models import User, Character, Dndclass, Dndspell, Dndrace, Dndsubrace
+from app.models import Dndequipment, Dndbackground, Dndfeature, Dndtrait
 
 def intersection(l1, l2):
     l3 = [val for val in l1 if val in l2]
@@ -78,10 +81,13 @@ def createcharacter():
     # user has chosen a race but hasn't yet chosen a subrace
     if form.is_submitted() and session.get('subraceDone') == 'no':
         #print('reached block 1')
+        char_type = form.type_list.data
         char_race = form.races_list.data
         char_class = form.classes_list.data
         char_align = form.alignment_list.data
         # clear existing session variables
+        if session.get('characterType'):
+            session.pop('characterType')
         if session.get('characterRace'):
             session.pop('characterRace')
         if session.get('characterClass'):
@@ -91,6 +97,7 @@ def createcharacter():
         if session.get('characterSubrace'):
             session.pop('characterSubrace')
         # store new session data
+        session['characterType'] = char_type
         session['characterRace'] = char_race
         session['characterClass'] = char_class
         session['characterAlign'] = char_align
@@ -256,7 +263,6 @@ def createcharacter2():
                     session[fullname] = currscore + curr_subrace_result.bonus1
             # special choice for half-elves
             if session.get('characterRace') == 'Half-Elf':
-                #print('half elf')
                 msg3 = 'You will choose your half-elf bonuses in the next step.'
             else:
                 msg3 = ''
@@ -310,7 +316,7 @@ def createcharacter3():
             # save character background to session
             if bg_form.data['bg_list'] != None:
                 session['background'] = bg_form.data['bg_list']
-            final_msg = 'Great! You\'re close to being done.'
+            final_msg = 'Great! You\'ve made excellent choices.'
             final_msg2 = 'In the next step, you\'ll make a few more choices about your character.'
             if session.get('halfelfBonusDone'):
                 session.pop('halfelfBonusDone')
@@ -322,9 +328,7 @@ def createcharacter3():
                 msg2=final_msg, msg3=final_msg2)
         else:
             if session.get('characterRace') == 'Half-Elf' and he_form.is_submitted():
-                #print(he_form.data)
                 chosen_increases = he_form.data['increase_list']
-                #print(chosen_increases)
                 # check if user has picked exactly 2 abilities to increase
                 if chosen_increases != None and len(chosen_increases) == 2:
                     # increase the two chosen ability scores and save the new scores
@@ -419,14 +423,26 @@ def chooseprofs():
         form1 = ChooseProfForm1_12()
 
     if form1 and not form1.is_submitted():
+        bgskills = [sk for sk in bgskills if len(sk) > 0]
         profstring = ', '.join(bgskills)
+        #print(bgskills)
         return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1,
             msg1=profmsg1, msg2=profmsg2, profs_str=profstring)
     elif form1 and form1.is_submitted():
         chosen_profs = form1.data['field1']
+        #print(chosen_profs)
+        #print(', '.join(chosen_profs))
         # notify user if user has not chosen correct number of proficiencies
         if len(chosen_profs) != numchoices1:
             flash('Please choose exactly ' + str(numchoices1))
+            return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
+        # notify user if they have chosen a proficiency they already had
+        prof_overlap = []
+        prof_overlap = [prf for prf in bgskills if prf in ', '.join(chosen_profs)]
+        prof_overlap = [p for p in prof_overlap if len(p) > 0]
+        #print(prof_overlap)
+        if len(prof_overlap) > 0:
+            flash('Try choosing proficiencies you don\'t already have.')
             return render_template('chooseprofs.html', title='Create Character', form1=form1, num1=numchoices1)
         # save chosen proficiencies to session
         session['character_proficiencies'] = ', '.join(bgskills)
@@ -480,7 +496,7 @@ def chooseprofs2():
             existing_chosen = session.get('chosen_proficiencies')
             new_existing = ', '.join(chosen_profs)
             session['chosen_proficiencies'] = existing_chosen + ', ' + new_existing
-            print(session.get('chosen_proficiencies'))
+            #print(session.get('chosen_proficiencies'))
         return render_template('chooseprofs2.html', title='Create Character', msg4=donemsg1, num3=numchoices3)
     else:
         return render_template('chooseprofs2.html', title='Create Character', msg4=donemsg1, num3=numchoices3)
@@ -588,12 +604,12 @@ def chooselangs():
         chosen_str4 = session.get('chosen_proficiencies')
 
     if form4 and not form4.is_submitted():
-        print('block4 reached')
+        #print('block4 reached')
         return render_template('chooselangs.html', title='Create Character', form4=form4,
             num4=numprofchoices, currentprofs=profs_str4, recentchoices=chosen_str4, msg1=existing_msg,
             msg2=chosen_msg, msg3=choose_prof)
     elif form4 and form4.is_submitted():
-        print('block4a reached')
+        #print('block4a reached')
         chosen_profs = form4.data['field1']
         # notify user if user has not chosen correct number of proficiencies
         if len(chosen_profs) != numprofchoices:
@@ -605,7 +621,6 @@ def chooselangs():
             existing_chosen = session.get('chosen_proficiencies')
             new_existing = ', '.join(chosen_profs)
             session['chosen_proficiencies'] = existing_chosen + ', ' + new_existing
-            #print(session.get('chosen_proficiencies'))
         # save known languages to session
         if existlangs is not None:
             session['knownlangs'] = existlangs
@@ -619,7 +634,7 @@ def chooselangs():
             msg4=existing_langs, msg1=existing_msg, known=session.get('knownlangs'),
             currentprofs=session.get('character_proficiencies'), recentchoices=session.get('chosen_proficiencies'))
     elif form5 and not form5.is_submitted():
-        print('block5 reached')
+        #print('block5 reached')
         # build string of known languages to display to user
         if existlangs is not None:
             session['knownlangs'] = existlangs
@@ -632,7 +647,7 @@ def chooselangs():
         return render_template('chooselangs.html', title='Create Character', form5=form5,
             num5=numlangchoices, msg4=existing_langs, msg5=choose_langs, known=session.get('knownlangs'))
     elif form5 and form5.is_submitted():
-        print('block5a reached')
+        #print('block5a reached')
         chosen_langs = form5.data['field1']
         # notify user if user has not chosen correct number of languages
         if len(chosen_langs) != numlangchoices:
@@ -649,7 +664,7 @@ def chooselangs():
         return render_template('chooselangs.html', title='Create Character',
             msg6=donemsg1, known=session.get('knownlangs'), msg4=existing_langs)
     else:
-        print('block5b reached')
+        #print('block5b reached')
         # display known languages to user
         if existlangs is not None:
             session['knownlangs'] = existlangs
@@ -664,18 +679,21 @@ def chooselangs():
             currentprofs=session.get('character_proficiencies'), recentchoices=session.get('chosen_proficiencies'),
             msg1=existing_msg)
 
+# display races table
 @app.route('/dndraces')
 @login_required
 def dndraces():
     ddraces = Dndrace.query.all()
     return render_template('dndraces.html', title='D&D Races', allraces=ddraces)
 
+# display traits table
 @app.route('/dndtraits')
 @login_required
 def dndtraits():
     ddtraits = Dndtrait.query.all()
     return render_template('dndtraits.html', title='D&D Traits', alltraits=ddtraits)
 
+# display features table with filtering options
 @app.route('/dndfeatures', methods=['GET', 'POST'])
 @login_required
 def dndfeatures():
@@ -687,12 +705,14 @@ def dndfeatures():
     ddfeatures = Dndfeature.query.all()
     return render_template('dndfeatures.html', title='D&D Features', form=form, allfeatures=ddfeatures)
 
+# display backgrounds table
 @app.route('/dndbackgrounds')
 @login_required
 def dndbackgrounds():
     dd_bgs = Dndbackground.query.all()
     return render_template('dndbackgrounds.html', title='D&D Backgrounds', allbgs=dd_bgs)
 
+# display equipment table with filtering options
 @app.route('/dndequipment', methods=['GET', 'POST'])
 @login_required
 def dndequipment():
@@ -710,6 +730,7 @@ def dndequipment():
     ddequip = Dndequipment.query.filter(Dndequipment.maincategory.notin_(['Weapon', 'Armor']))
     return render_template('dndequipment.html', title='D&D Equipment', form=form, allequip=ddequip)
 
+# display weapons and armor table with filtering options
 @app.route('/dndweaponsarmor', methods=['GET', 'POST'])
 @login_required
 def dndweaponsarmor():
@@ -731,6 +752,7 @@ def dndweaponsarmor():
     ddequip = Dndequipment.query.filter(Dndequipment.maincategory.in_(['Weapon', 'Armor']))
     return render_template('dndweaponsarmor.html', title='D&D Weapons & Armor', form=form, allequip=ddequip)
 
+# display spells table with filtering options
 @app.route('/dndspells', methods=['GET', 'POST'])
 @login_required
 def dndspells():

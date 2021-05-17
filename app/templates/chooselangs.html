@@ -39,6 +39,7 @@
                   {{ form5.field1 }}
                   <button type="submit">Submit</button>
               </form>
+              <a href="{{ url_for('index') }}">Skip this step for now</a>
             </div>
         {% endif %}
 
@@ -51,6 +52,16 @@
                 <p>{{ msg4 }}</p>
                 <p>{{ known }}</p>
                 <p>{{ msg6 }}</p>
+                <a href="{{ url_for('index') }}">Continue</a>
+            </div>
+
+        {% endif %}
+
+        {% if msg6 and (known and not msg1) %}
+
+            <div>
+                <p>{{ msg4 }}</p>
+                <p>{{ known }}</p>
                 <a href="{{ url_for('index') }}">Continue</a>
             </div>
 
