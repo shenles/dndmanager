@@ -22,9 +22,12 @@ class User(UserMixin, db.Model):
 
 class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), index=True, unique=True)
+    name = db.Column(db.String(120), index=True)
+    campaign = db.Column(db.String(240), index=True)
+    numsessions = db.Column(db.Integer)
     chartype = db.Column(db.String(12)) # pc or npc 
     race = db.Column(db.String(64))
+    subrace = db.Column(db.String(64))
     charclass = db.Column(db.String(64))
     level = db.Column(db.Integer)
     alignment = db.Column(db.String(64))
@@ -37,10 +40,10 @@ class Character(db.Model):
     speed = db.Column(db.Integer)
     size = db.Column(db.String(20))
     hpmax = db.Column(db.Integer)
-    abilityscores = db.Column(db.String(320)) # store scores/modifiers as dictionaries
-    abilitymods = db.Column(db.String(320))
+    abilityscores = db.Column(db.String(320)) # store scores as dictionaries
+    abilitymods = db.Column(db.String(320)) # store modifiers as dictionaries
     savemods = db.Column(db.String(320))
-    skillmods = db.Column(db.String(320))  
+    skillmods = db.Column(db.String(640))  
     hitdice = db.Column(db.String(12)) 
     darkvision = db.Column(db.String(12)) 
     languages = db.Column(db.String(640))
@@ -87,6 +90,24 @@ class Dndclass(db.Model):
 
     def __repr__(self):
         return '<Dndclass {}>'.format(self.name)
+
+'''
+class ClassEquip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    class_name = db.Column(db.String(120), index=True, unique=True)
+    num_choices_one = db.Column(db.Integer)
+    num_choices_two = db.Column(db.Integer)
+    num_choices_three = db.Column(db.Integer)
+    num_choices_four = db.Column(db.Integer)
+    choices_one = db.Column(db.String(1000))
+    choices_two = db.Column(db.String(1000))
+    choices_three = db.Column(db.String(1000))
+    choices_four = db.Column(db.String(1000))
+    start_equip = db.Column(db.String(600))
+
+    def __repr__(self):
+        return '<ClassEquip {}>'.format(self.classname)
+'''
 
 class Dndspell(db.Model):
     id = db.Column(db.Integer, primary_key=True)

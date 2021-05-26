@@ -81,11 +81,14 @@ def createcharacter():
     # user has chosen a race but hasn't yet chosen a subrace
     if form.is_submitted() and session.get('subraceDone') == 'no':
         #print('reached block 1')
+        char_name = form.name_box.data
         char_type = form.type_list.data
         char_race = form.races_list.data
         char_class = form.classes_list.data
         char_align = form.alignment_list.data
         # clear existing session variables
+        if session.get('characterName'):
+            session.pop('characterName')
         if session.get('characterType'):
             session.pop('characterType')
         if session.get('characterRace'):
@@ -97,6 +100,7 @@ def createcharacter():
         if session.get('characterSubrace'):
             session.pop('characterSubrace')
         # store new session data
+        session['characterName'] = char_name
         session['characterType'] = char_type
         session['characterRace'] = char_race
         session['characterClass'] = char_class
@@ -110,7 +114,9 @@ def createcharacter():
             session['subraceDone'] = 'yes'
             return render_template('createcharacter.html', title='Create Character',
                 class_pick=form.classes_list.data, race_pick=form.races_list.data,
-                align_pick=form.alignment_list.data, message='Creating your character:', form2=form2)
+                align_pick=form.alignment_list.data, type_pick=session.get('characterType'),
+                name_pick=form.name_box.data,
+                message='Creating your character:', form2=form2)
         # otherwise, just start rolling ability scores
         else:
             # mark subrace step as done so it is not displayed
@@ -119,7 +125,9 @@ def createcharacter():
             session['subraceDone'] = 'yes'
             return render_template('createcharacter.html', title='Create Character',
                 class_pick=form.classes_list.data, race_pick=form.races_list.data,
-                align_pick=form.alignment_list.data, message='Creating your character:', start_rolling='yes')  
+                align_pick=form.alignment_list.data, type_pick=session.get('characterType'),
+                name_pick=form.name_box.data,
+                message='Creating your character:', start_rolling='yes')  
     # user has chosen a subrace
     if form2.is_submitted() and session.get('subraceDone') == 'yes':
         if form2.subrace1.data:
@@ -143,6 +151,7 @@ def createcharacter():
         return render_template('createcharacter.html', title='Create Character',
                 class_pick=session.get('characterClass'), race_pick=session.get('characterRace'),
                 align_pick=session.get('characterAlign'), message='Creating your character:',
+                type_pick=session.get('characterType'), name_pick=form.name_box.data,
                 start_rolling='yes', subrace=subracedata)
     if session.get('subraceDone'):
         session.pop('subraceDone')
@@ -283,6 +292,7 @@ def createcharacter2():
     return render_template('createcharacter2.html', title='Create Character',
             myrace=session.get('characterRace'), myclass=session.get('characterClass'),
             myalign=session.get('characterAlign'), mysubrace=curr_subrace_result,
+            mytype=session.get('characterType'), myname=session.get('characterName'),
             assign0=session.get('roll0'), assign1=session.get('roll1'),
             assign2=session.get('roll2'), assign3=session.get('roll3'),
             assign4=session.get('roll4'), assign5=session.get('roll5'),
@@ -461,6 +471,7 @@ def chooseprofs2():
     choose_msg = 'Please choose additional proficiencies below.'
     donemsg1 = 'Great! Click Continue to proceed.'
     profs_str2, chosen_str = '', ''
+
     if session.get('characterClass'):
         currclass = session.get('characterClass')
         getclass = Dndclass.query.filter_by(name=currclass).first()
@@ -511,6 +522,7 @@ def chooseprofs3():
     choose_msg = 'Please choose additional proficiencies below.'
     donemsg1 = 'Great! Click Continue to proceed.'
     profs_str3, chosen_str3 = '', ''
+
     # use user's dnd class to determine how many selections the user gets to make
     if session.get('characterClass'):
         currclass = session.get('characterClass')
@@ -549,9 +561,11 @@ def chooseprofs3():
     else:
         return render_template('chooseprofs3.html', title='Create Character', msg4=donemsg1, num3=numchoices3)
 
-@app.route('/chooselangs', methods=['GET', 'POST'])
+# continue with character creation
+# user finishes choosing proficiencies and chooses languages
+@app.route('/chooseprofs4', methods=['GET', 'POST'])
 @login_required
-def chooselangs():
+def chooseprofs4():
     existing_msg = 'You have the following proficiencies:'
     chosen_msg = 'You have also added these proficiencies:'
     existing_langs = 'You know the following languages:'
@@ -605,7 +619,7 @@ def chooselangs():
 
     if form4 and not form4.is_submitted():
         #print('block4 reached')
-        return render_template('chooselangs.html', title='Create Character', form4=form4,
+        return render_template('chooseprofs4.html', title='Create Character', form4=form4,
             num4=numprofchoices, currentprofs=profs_str4, recentchoices=chosen_str4, msg1=existing_msg,
             msg2=chosen_msg, msg3=choose_prof)
     elif form4 and form4.is_submitted():
@@ -614,7 +628,7 @@ def chooselangs():
         # notify user if user has not chosen correct number of proficiencies
         if len(chosen_profs) != numprofchoices:
             flash('Please choose exactly ' + str(numprofchoices))
-            return render_template('chooselangs.html', title='Create Character',
+            return render_template('chooseprofs4.html', title='Create Character',
                 form4=form4, num4=numprofchoices)
         # save new proficiencies to session
         if session.get('chosen_proficiencies'):
@@ -625,12 +639,14 @@ def chooselangs():
         if existlangs is not None:
             session['knownlangs'] = existlangs
         if existsublangs is not None and session.get('knownlangs') is not None:
-            templangs = session.get('knownlangs')
-            session['knownlangs'] = templangs + ', ' + existsublangs
+            if existsublangs != '':
+                templangs = session.get('knownlangs')
+                session['knownlangs'] = templangs + ', ' + existsublangs
         if existbglangs is not None and session.get('knownlangs') is not None:
-            templg = session.get('knownlangs')
-            session['knownlangs'] = templg + ', ' + existbglangs
-        return render_template('chooselangs.html', title='Create Character',
+            if existbglangs != '':
+                templg = session.get('knownlangs')
+                session['knownlangs'] = templg + ', ' + existbglangs
+        return render_template('chooseprofs4.html', title='Create Character',
             msg4=existing_langs, msg1=existing_msg, known=session.get('knownlangs'),
             currentprofs=session.get('character_proficiencies'), recentchoices=session.get('chosen_proficiencies'))
     elif form5 and not form5.is_submitted():
@@ -639,12 +655,14 @@ def chooselangs():
         if existlangs is not None:
             session['knownlangs'] = existlangs
         if existsublangs is not None and session.get('knownlangs') is not None:
-            templangs = session.get('knownlangs')
-            session['knownlangs'] = templangs + ', ' + existsublangs
+            if existsublangs != '':
+                templangs = session.get('knownlangs')
+                session['knownlangs'] = templangs + ', ' + existsublangs
         if existbglangs is not None and session.get('knownlangs') is not None:
-            templg = session.get('knownlangs')
-            session['knownlangs'] = templg + ', ' + existbglangs
-        return render_template('chooselangs.html', title='Create Character', form5=form5,
+            if existbglangs != '':
+                templg = session.get('knownlangs')
+                session['knownlangs'] = templg + ', ' + existbglangs
+        return render_template('chooseprofs4.html', title='Create Character', form5=form5,
             num5=numlangchoices, msg4=existing_langs, msg5=choose_langs, known=session.get('knownlangs'))
     elif form5 and form5.is_submitted():
         #print('block5a reached')
@@ -652,7 +670,7 @@ def chooselangs():
         # notify user if user has not chosen correct number of languages
         if len(chosen_langs) != numlangchoices:
             flash('Please choose exactly ' + str(numlangchoices))
-            return render_template('chooselangs.html', title='Create Character',
+            return render_template('chooseprofs4.html', title='Create Character',
                 form5=form5, num5=numlangchoices)
         # save new languages to session
         newknown = ', '.join(chosen_langs)
@@ -661,7 +679,7 @@ def chooselangs():
             session['knownlangs'] = tempknown + ', ' + newknown
         else:
             session['knownlangs'] = newknown
-        return render_template('chooselangs.html', title='Create Character',
+        return render_template('chooseprofs4.html', title='Create Character',
             msg6=donemsg1, known=session.get('knownlangs'), msg4=existing_langs)
     else:
         #print('block5b reached')
@@ -669,15 +687,93 @@ def chooselangs():
         if existlangs is not None:
             session['knownlangs'] = existlangs
         if existsublangs is not None and session.get('knownlangs') is not None:
-            templangs = session.get('knownlangs')
-            session['knownlangs'] = templangs + ', ' + existsublangs
+            if existsublangs != '':
+                templangs = session.get('knownlangs')
+                session['knownlangs'] = templangs + ', ' + existsublangs
         if existbglangs is not None and session.get('knownlangs') is not None:
-            templg = session.get('knownlangs')
-            session['knownlangs'] = templg + ', ' + existbglangs
-        return render_template('chooselangs.html', title='Create Character',
+            if existbglangs != '':
+                templg = session.get('knownlangs')
+                session['knownlangs'] = templg + ', ' + existbglangs
+        return render_template('chooseprofs4.html', title='Create Character',
             msg6=donemsg1, known=session.get('knownlangs'), msg4=existing_langs,
             currentprofs=session.get('character_proficiencies'), recentchoices=session.get('chosen_proficiencies'),
             msg1=existing_msg)
+
+# user chooses equipment for their character
+@app.route('/chooseequip', methods=['GET', 'POST'])
+@login_required
+def chooseequip():
+    existing_equip_bg = 'You have the following equipment from your background:'
+    return render_template('chooseequip.html', title='Character Options',
+        bg_msg=existing_equip_bg)
+
+# character is added to db
+# user is prompted for next steps
+@app.route('/charcreated', methods=['GET', 'POST'])
+@login_required
+def charcreated():
+    congrats = 'Congratulations! Your character has been created.'
+    ask = 'What would you like to do now?'
+
+    ch_name = session.get('characterName')
+    ch_type = session.get('characterType')
+    ch_race = session.get('characterRace')
+    ch_subrace = session.get('characterSubrace')
+    ch_class = session.get('characterClass')
+    ch_align = session.get('characterAlign')
+    ch_level = session.get('characterLevel')
+    ch_background = session.get('background')
+    ch_stren = session.get('Strength')
+    ch_dex = session.get('Dexterity')
+    ch_constn = session.get('Constitution')
+    ch_intell = session.get('Intelligence')
+    ch_wis = session.get('Wisdom')
+    ch_cha = session.get('Charisma')
+    all_abilities = [ch_stren, ch_dex, ch_constn, ch_intell, ch_wis, ch_cha]
+
+    # calculate modifiers based on ability scores
+    abil_mods = []
+    for asc in all_abilities:
+        diff = asc - 10
+        if diff % 2 == 0: # even
+            modifier = diff // 2
+        else:
+            modifier = (diff-1) // 2
+        abil_mods.append(modifier)
+
+    # use level to determine proficiency bonus
+    if ch_level <= 4:
+        ch_pb = 2
+    elif ch_level <= 8:
+        ch_pb = 3
+    elif ch_level <= 12:
+        ch_pb = 4
+    elif ch_level <= 16:
+        ch_pb = 5
+    elif ch_level <= 20:
+        ch_pb = 6
+    else:
+        ch_pb = 0
+
+    ch_abilities = {'Strength': ch_stren, 'Dexterity': ch_dex, 'Constitution': ch_constn, 'Intelligence': ch_intell, 'Wisdom': ch_wis, 'Charisma': ch_cha}
+    ch_abil_mods = {'Strength': abil_mods[0], 'Dexterity': abil_mods[1], 'Constitution': abil_mods[2], 'Intelligence': abil_mods[3], 'Wisdom': abil_mods[4], 'Charisma': abil_mods[5]}
+    print(ch_abilities)
+    print(ch_abil_mods)
+
+    #newchar = Character(name=ch_name, chartype=ch_type, race=ch_race, subrace=ch_subrace,
+        #charclass=ch_class, level=ch_level, alignment=ch_align, background=ch_background,
+        #profbonus=ch_pb, abilityscores=str(ch_abilities), abilitymods=str(ch_abil_mods))
+    return render_template('charcreated.html', title='Create Character',
+        msg1=congrats, msg2=ask)
+
+# user chooses languages for their character
+@app.route('/chooselangs', methods=['GET', 'POST'])
+@login_required
+def chooselangs():
+    existing_langs = 'You know the following languages:'
+    choose_langs = 'You can choose additional languages below.'
+    return render_template('chooselangs.html', title='Character Options',
+        msg1=congrats, msg2=ask)
 
 # display races table
 @app.route('/dndraces')

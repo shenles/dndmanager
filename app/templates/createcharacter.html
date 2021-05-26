@@ -5,9 +5,12 @@
     
     {% if form and not form2 %}
     <div>
-        <h2>Select class & race:</h2>
+        <h2>Enter a name and select type, class, race, & alignment:</h2>
+        <p>(You can change the name, type, and alignment later.)</p>
         <form method="post">
             {{ form.hidden_tag() }}
+            {{ form.name_box }}
+            {{ form.type_list }}
             {{ form.races_list }}
             {{ form.classes_list }}
             {{ form.alignment_list }}
@@ -19,6 +22,12 @@
     {% if message %}
     <div>
         <h2>{{ message }}</h2>
+        {% if name_pick %}
+            <p id="namepick">Name: {{ name_pick }}</p>
+        {% endif %}
+        {% if type_pick %}
+            <p id="typepick">Type: {{ type_pick }}</p>
+        {% endif %}
         {% if race_pick %}
             <p id="racepick">Race: {{ race_pick }}</p>
         {% endif %}
@@ -75,7 +84,7 @@
 
     {% if form2 and (race_pick and not start_rolling) %}
     <div>
-        <h2>Select class & race:</h2>
+        <h2>Select subrace or "None":</h2>
         <form method="post">
             {{ form2.hidden_tag() }}
             {% if race_pick == "Elf" %}

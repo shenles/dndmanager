@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import widgets, RadioField, SelectMultipleField, StringField
 from wtforms import PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import ValidationError, DataRequired, InputRequired, Optional, Email, EqualTo
+from wtforms.validators import ValidationError, DataRequired, InputRequired, Optional, Email, EqualTo, Length
 from app.models import User, SpellLevel, SpellClass, SpellSchool, Dndclass, Dndrace, Dndsubrace, Dndbackground
 
 class LoginForm(FlaskForm):
@@ -36,6 +36,7 @@ class CreateCharacterForm(FlaskForm):
     race_res = Dndrace.query.with_entities(Dndrace.name).all()
     class_options = [x[0] for x in class_res]
     race_options = [x[0] for x in race_res]
+    name_box = StringField('Name', validators=[Optional(), Length(max=120)])
     type_options = ['PC (Player character)', 'NPC (Non-player character)']
     type_list = SelectField('Type', choices=type_options)
     races_list = SelectField('Race', choices=race_options)
@@ -44,7 +45,7 @@ class CreateCharacterForm(FlaskForm):
                             'Lawful good', 'Neutral good', 'Chaotic good',
                             'Lawful neutral', 'Neutral', 'Chaotic neutral',
                             'Lawful evil', 'Neutral evil', 'Chaotic evil',
-                            'Other', 'None'
+                            'Other alignment', 'No alignment'
                         ]
     alignment_list = SelectField('Alignment', choices=alignment_options)
     submit = SubmitField('Submit')
@@ -85,6 +86,7 @@ class ChooseBgForm(FlaskForm):
     bg_list = RadioField('Backgrounds', choices=all_backgrounds)
     submit = SubmitField('Submit')
 
+# forms for choosing proficiencies
 class ChooseProfForm1_1(FlaskForm):
     choices1 = Dndclass.query.filter_by(id=1).first()
     allchoices1 = choices1.profchoices
@@ -213,6 +215,7 @@ class ChooseProfForm4(FlaskForm):
     field1 = MultiCheckboxField('Proficiency options', choices=listchoices1)
     submit = SubmitField('Submit')
 
+# forms for choosing languages
 class ChooseLangForm1_1(FlaskForm):
     choices1 = Dndrace.query.filter_by(id=5).first() # Half-Elf
     allchoices1 = choices1.langoptions
@@ -230,6 +233,8 @@ class ChooseLangForm1_2(FlaskForm):
     listchoices1 = [(x, x) for x in listchoices]
     field1 = MultiCheckboxField('Language options', choices=listchoices1)
     submit = SubmitField('Submit')
+
+# forms for choosing equipment
 
 class SpellFilterForm(FlaskForm):
     spell_levels = SpellLevel.query.with_entities(SpellLevel.level).all()

@@ -4,6 +4,12 @@
 
     <h1>Creating your character:</h1>
     {% if myalign %}
+      {% if myname %}
+      <span id="chosenName">{{ myname }},</span>
+      {% endif %}
+      {% if mytype %}
+      <span id="chosenType">{{ mytype }}</span>
+      {% endif %}
       <span id="chosenAlign">{{ myalign }}</span>
       <span id="chosenRace">{{ myrace }}</span>
       <span id="chosenClass">{{ myclass }}</span>

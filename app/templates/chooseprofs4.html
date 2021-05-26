@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Creating your character</h1>
+
+        {% if form4 and num4 %}
+
+            {% if msg1 and (msg2 and currentprofs) %}
+                <p>{{ msg1 }}</p>
+                <p>{{ currentprofs }}</p>
+                <p>{{ msg2 }}</p>
+                <p>{{ recentchoices }}</p>
+                <p>{{ msg3 }}</p>
+            {% endif %}
+
+	        <div>
+	          <p>Choose {{ num4 }} proficiencies from this list:</p>
+	          <form method="post">
+	              {{ form4.hidden_tag() }}
+	              {{ form4.field1 }}
+	              <button type="submit">Submit</button>
+	          </form>
+	        </div>
+        {% endif %}
+
+        {% if form5 and num5 %}
+
+            {% if msg4 and (msg5 and known) %}
+                <p>{{ msg4 }}</p>
+                <p>{{ known }}</p>
+                <p>{{ msg5 }}</p>
+            {% endif %}
+
+            <div>
+              <p>Choose {{ num5 }} languages from this list:</p>
+              <form method="post">
+                  {{ form5.hidden_tag() }}
+                  {{ form5.field1 }}
+                  <button type="submit">Submit</button>
+              </form>
+              <a href="{{ url_for('charcreated') }}">Skip this step for now</a>
+            </div>
+        {% endif %}
+
+        {% if msg4 and (msg1 and known) %}
+
+            <div>
+                <p>{{ msg1 }}</p>
+                <p>{{ currentprofs }}</p>
+                <p>{{ recentchoices }}</p>
+                <p>{{ msg4 }}</p>
+                <p>{{ known }}</p>
+                <p>{{ msg6 }}</p>
+                <a href="{{ url_for('charcreated') }}">Continue</a>
+            </div>
+
+        {% endif %}
+
+        {% if msg6 and (known and not msg1) %}
+
+            <div>
+                <p>{{ msg4 }}</p>
+                <p>{{ known }}</p>
+                <a href="{{ url_for('charcreated') }}">Continue</a>
+            </div>
+
+        {% endif %}
+
+{% endblock %}

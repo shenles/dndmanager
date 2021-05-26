@@ -114,7 +114,41 @@ def populateSpellSchools():
     for currnum in range(len(magic_schools)):
         spell_school = SpellSchool(id=currnum+1, name=magic_schools[currnum])
         db.session.add(spell_school)
-    db.session.commit()   
+    db.session.commit()
+
+def populateClassEquip():
+    url_start = "https://www.dnd5eapi.co/api/starting-equipment/"
+    all_classes = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
+
+    for cl in all_classes:
+        url_string = url_start + cl.lower() # e.g. "https://www.dnd5eapi.co/api/starting-equipment/bard"
+        r = requests.get(url_string).content
+        rj = json.loads(r)
+        start_equip_dict = {}
+        equip_choice1, equip_choice2, equip_choice3, equip_choice4 = None, None, None, None
+        first_choice, second_choice, third_choice, fourth_choice = None, None, None, None
+        curr_option_set = []
+
+        if "starting_equipment" in rj:
+            for se in rj["starting_equipment"]:
+                if "equipment" in se and "quantity" in se:
+                    curr_equip_name = se["equipment"]["name"]
+                    curr_equip_quantity = se["quantity"]
+                    start_equip_dict[curr_equip_name] = curr_equip_quantity
+        #print(start_equip_dict)
+
+        if "starting_equipment_options" in rj:
+
+            first_choice = rj["starting_equipment_options"][0]
+
+            if len(rj["starting_equipment_options"]) > 1:
+                second_choice = rj["starting_equipment_options"][1]
+            if len(rj["starting_equipment_options"]) > 2:
+                third_choice = rj["starting_equipment_options"][2]
+            if len(rj["starting_equipment_options"]) > 3:
+                fourth_choice = rj["starting_equipment_options"][3]
+
+            print(first_choice["from"], "\n\n")
 
 # pull races info from API to populate Dndrace table
 def populateRaces():
@@ -450,7 +484,7 @@ def populateBackgrounds():
         db.session.add(newdndbg)
     db.session.commit()
 
-#populateClasses() # done, do not run again 
+#populateClasses() # done
 #populateSpells() # done
 #populateSpellLevels() # done
 #populateSpellClasses() # done
@@ -459,5 +493,6 @@ def populateBackgrounds():
 #populateSubraces() # done
 #populateEquipment() # done
 #populateBackgrounds() # done
-#populateFeatures()
-#populateTraits()
+#populateFeatures() # done
+#populateTraits() # done
+#populateClassEquip()
