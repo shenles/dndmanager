@@ -729,6 +729,9 @@ def charcreated():
     ch_intell = session.get('Intelligence')
     ch_wis = session.get('Wisdom')
     ch_cha = session.get('Charisma')
+    ch_langs = session.get('knownlangs')
+    ch_profs = session.get('character_proficiencies')
+    ch_profs = ch_profs + ', ' + session.get('chosen_proficiencies')
     all_abilities = [ch_stren, ch_dex, ch_constn, ch_intell, ch_wis, ch_cha]
 
     # calculate modifiers based on ability scores
@@ -757,12 +760,143 @@ def charcreated():
 
     ch_abilities = {'Strength': ch_stren, 'Dexterity': ch_dex, 'Constitution': ch_constn, 'Intelligence': ch_intell, 'Wisdom': ch_wis, 'Charisma': ch_cha}
     ch_abil_mods = {'Strength': abil_mods[0], 'Dexterity': abil_mods[1], 'Constitution': abil_mods[2], 'Intelligence': abil_mods[3], 'Wisdom': abil_mods[4], 'Charisma': abil_mods[5]}
-    print(ch_abilities)
-    print(ch_abil_mods)
+    #print(ch_abilities)
+    #print(ch_abil_mods)
 
-    #newchar = Character(name=ch_name, chartype=ch_type, race=ch_race, subrace=ch_subrace,
-        #charclass=ch_class, level=ch_level, alignment=ch_align, background=ch_background,
-        #profbonus=ch_pb, abilityscores=str(ch_abilities), abilitymods=str(ch_abil_mods))
+    # determine darkvision based on race
+    if ch_race in ['Human', 'Halfling', 'Dragonborn']:
+        ch_darkvis = 'no'
+    else:
+        ch_darkvis = 'yes'
+
+    # determine unarmored AC based on Constitution modifier
+    ch_ac = 10 + ch_abil_mods['Constitution']
+    # determine initiative modifier based on Dexterity modifier
+    ch_init = ch_abil_mods['Dexterity']
+    # determine speed based on race
+    if ch_race in ['Halfling', 'Dwarf', 'Gnome']:
+        ch_speed = 25
+    else:
+        ch_speed = 30
+    # determine size based on race
+    if ch_race in ['Halfling', 'Gnome']:
+        ch_size = 'Small'
+    else:
+        ch_size = 'Medium'
+    # calculate max HP based on Constitution modifier and hitdie
+    ch_res = Dndclass.query.filter_by(name=ch_class).first()
+    ch_hpmax = ch_res.hitdie + ch_abil_mods['Constitution']
+    ch_hitdice = str(ch_level) + 'd' + str(ch_res.hitdie)
+    # clean up strings
+    profslist = ch_profs.split(', ')
+    langslist = ch_langs.split(', ')
+    finalprofslist = [p for p in profslist if len(p) > 2]
+    ch_profs = ', '.join(finalprofslist)
+    finallangslist = []
+    for l in langslist:
+        if l not in finallangslist and len(l) > 2:
+            finallangslist.append(l)
+    ch_langs = ', '.join(finallangslist)
+
+    # determine spellcasting class and ability, if any
+    # determine spell save DC and spell attack modifier
+    if ch_class in ['Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard']:
+        ch_spellclass = ch_class
+    elif ch_class in ['Fighter', 'Rogue']:
+        ch_spellclass = 'Wizard'
+    else:
+        ch_spellclass = None
+
+    if ch_spellclass is not None:
+        if ch_spellclass in ['Bard', 'Warlock', 'Sorcerer', 'Paladin']:
+            ch_spellabil = 'Charisma'
+            ch_spelldc = 8 + ch_pb + ch_abil_mods[ch_spellabil]
+            ch_spellmod = ch_pb + ch_abil_mods[ch_spellabil]
+        elif ch_spellclass in ['Cleric', 'Druid', 'Ranger']:
+            ch_spellabil = 'Wisdom'
+            ch_spelldc = 8 + ch_pb + ch_abil_mods[ch_spellabil]
+            ch_spellmod = ch_pb + ch_abil_mods[ch_spellabil]
+        elif ch_spellclass in ['Wizard']:
+            ch_spellabil = 'Intelligence'
+            ch_spelldc = 8 + ch_pb + ch_abil_mods[ch_spellabil]
+            ch_spellmod = ch_pb + ch_abil_mods[ch_spellabil]
+        else:
+            ch_spellabil = None
+            ch_spelldc = None
+            ch_spellmod = None
+    else:
+        ch_spellabil = None
+        ch_spelldc = None
+        ch_spellmod = None
+
+    #print(ch_hitdice)
+    #print(ch_darkvis, ch_size, ch_speed)
+    #print(ch_langs)
+    #print(ch_profs)
+    #print(ch_spellclass, ch_spellabil, ch_spelldc, ch_spellmod)
+    
+    # determine modifiers for skill checks and saving throws
+    skill_list = ['Acrobatics', 'Animal Handling', 'Arcana', 'Athletics', 'Deception',
+                  'History', 'Insight', 'Intimidation', 'Investigation', 'Medicine', 'Nature', 'Perception',
+                  'Performance', 'Persuasion', 'Religion', 'Sleight of Hand', 'Stealth', 'Survival']
+
+    skill_categories = {'Acrobatics': 'Dexterity', 'Animal Handling': 'Wisdom', 'Arcana': 'Intelligence', 'Athletics': 'Strength',
+                        'Deception': 'Charisma', 'History': 'Intelligence', 'Insight': 'Wisdom', 'Intimidation': 'Charisma',
+                        'Investigation': 'Intelligence', 'Medicine': 'Wisdom', 'Nature': 'Intelligence', 'Perception': 'Wisdom',
+                        'Performance': 'Charisma', 'Persuasion': 'Charisma', 'Religion': 'Intelligence', 'Sleight of Hand': 'Dexterity',
+                        'Stealth': 'Dexterity', 'Survival': 'Wisdom'}
+
+    all_saves = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
+    abbrevs = {'Strength': 'STR', 'Dexterity': 'DEX', 'Constitution': 'CON', 'Intelligence': 'INT', 'Wisdom': 'WIS', 'Charisma': 'CHA'}
+
+    ch_skill_mods = {}
+    ch_save_mods = {}
+
+    # fill the dictionary of skill modifiers
+    for currskill in skill_list:
+        # add proficiency bonus if character is proficient in a skill
+        if currskill in finalprofslist and currskill in skill_categories:
+            currabil = skill_categories[currskill]
+            if currabil in ch_abil_mods:
+                currmod = ch_abil_mods[currabil]
+                currmod = currmod + ch_pb
+        elif currskill in skill_categories:
+            # if not proficient in this skill, do not add proficiency bonus
+            # use the modifier for the relevant ability
+            currabil = skill_categories[currskill]
+            if currabil in ch_abil_mods:
+                currmod = ch_abil_mods[currabil]
+        else:
+            currmod = 0
+        # add each skill and its modifier to the ch_skill_mods dictionary
+        ch_skill_mods[currskill] = currmod
+
+    #print(ch_res.saveprofs)
+
+    # fill dictionary of saving throw modifiers
+    for sv in all_saves:
+        if abbrevs[sv] in ch_res.saveprofs and sv in ch_abil_mods:
+            # add proficiency bonus if proficient in this saving throw
+            currsavemod = ch_abil_mods[sv]
+            currsavemod = currsavemod + ch_pb
+        elif sv not in ch_res.saveprofs and sv in ch_abil_mods:
+            # do not add proficiency bonus if not proficient in this saving throw
+            currsavemod = ch_abil_mods[sv]
+        else:
+            currsavemod = 0
+        ch_save_mods[sv] = currsavemod
+
+    #print(ch_skill_mods)
+    #print(ch_save_mods)
+
+    newchar = Character(name=ch_name, numsessions=0, chartype=ch_type, race=ch_race, subrace=ch_subrace,
+        charclass=ch_class, level=ch_level, alignment=ch_align, background=ch_background, xp=0,
+        profbonus=ch_pb, ac=ch_ac, initiative=ch_init, speed=ch_speed, size=ch_size, hpmax=ch_hpmax,
+        abilityscores=str(ch_abilities), abilitymods=str(ch_abil_mods), savemods=str(ch_save_mods), skillmods=str(ch_skill_mods),
+        hitdice=ch_hitdice, darkvision=ch_darkvis, languages=ch_langs, proficiencies=ch_profs, spellclass=ch_spellclass,
+        spellability=ch_spellabil, spellsavedc=ch_spelldc, spellatkbonus=ch_spellmod, user_id=current_user.id)
+    db.session.add(newchar)
+    db.session.commit()
     return render_template('charcreated.html', title='Create Character',
         msg1=congrats, msg2=ask)
 
