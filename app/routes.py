@@ -26,6 +26,19 @@ def index():
     characters = Character.query.filter_by(user_id=current_user.id)
     return render_template('index.html', title='Home', allchars=characters)
 
+@app.route('/delete', methods=['POST'])
+def delete():
+    if request:
+        #print(request.data, len(request.data))
+        id_to_delete = int(request.data)
+        #print(id_to_delete)
+        char_to_delete = Character.query.filter_by(id=id_to_delete).first()
+        #print(char_to_delete)
+        db.session.delete(char_to_delete)
+        db.session.commit()
+        return "success"
+    return "failure"
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -848,7 +861,6 @@ def charcreated():
 
     all_saves = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
     abbrevs = {'Strength': 'STR', 'Dexterity': 'DEX', 'Constitution': 'CON', 'Intelligence': 'INT', 'Wisdom': 'WIS', 'Charisma': 'CHA'}
-
     ch_skill_mods = {}
     ch_save_mods = {}
 
@@ -871,8 +883,6 @@ def charcreated():
         # add each skill and its modifier to the ch_skill_mods dictionary
         ch_skill_mods[currskill] = currmod
 
-    #print(ch_res.saveprofs)
-
     # fill dictionary of saving throw modifiers
     for sv in all_saves:
         if abbrevs[sv] in ch_res.saveprofs and sv in ch_abil_mods:
@@ -888,7 +898,6 @@ def charcreated():
 
     #print(ch_skill_mods)
     #print(ch_save_mods)
-
     newchar = Character(name=ch_name, numsessions=0, chartype=ch_type, race=ch_race, subrace=ch_subrace,
         charclass=ch_class, level=ch_level, alignment=ch_align, background=ch_background, xp=0,
         profbonus=ch_pb, ac=ch_ac, initiative=ch_init, speed=ch_speed, size=ch_size, hpmax=ch_hpmax,
@@ -899,6 +908,18 @@ def charcreated():
     db.session.commit()
     return render_template('charcreated.html', title='Create Character',
         msg1=congrats, msg2=ask)
+
+# user views details for their character
+@app.route('/viewchar', methods=['GET', 'POST'])
+@login_required
+def viewchar():
+    return render_template('viewchar.html', title='Character Details')
+
+# user edits details for their character
+@app.route('/editchar', methods=['GET', 'POST'])
+@login_required
+def editchar():
+    return render_template('editchar.html', title='Edit Character')
 
 # user chooses languages for their character
 @app.route('/chooselangs', methods=['GET', 'POST'])

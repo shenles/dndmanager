@@ -41,6 +41,7 @@
     <script>
 
         var rollsToShow = [], scoresToAssign = [];
+        var charToDelete = -1;
         // Rolls numDice number of dice, with each die of numSides dimension.
         // Returns an array (sorted descending) of the numbers rolled.
         function rollDice(numDice, numSides) {
@@ -121,6 +122,29 @@
             xhttp.send(data);
             document.getElementById('initialRolls').style.display = "none";
             document.getElementById('finalRolls').style.display = "block";
+        }
+
+        // Delete a character
+        function deleteChar(charId) {
+
+            console.log(charId);
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/delete", true);
+               
+            xhttp.onreadystatechange = function() {
+               if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                  console.log("finished");
+               } else {
+                  console.log(this.readyState);
+                  console.log(this.status);
+               }
+            }
+
+            xhttp.send(charId);
+            let rowToHide = "row".concat(charId.toString());
+            document.getElementById(rowToHide).style.display = "none";
+
         }
 
     </script>
