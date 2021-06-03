@@ -5,32 +5,151 @@
     {% if viewing %}
 
     <h1>Viewing Character: {{ viewing.name }}, {{ viewing.chartype }}</h1>
+    <a href="{{ url_for('index') }}">Done viewing</a>
 
     <table>
-        <tr><th>Class</th><th>Level</th><th>Background</th></tr>
+    	<tr>
+    		<td>
+    			<table>
+                <tr><th>Proficiency Bonus</th><th>Armor Class</th><th>Initiative</th></tr>
+                <tr><td>{{ viewing.profbonus }}</td><td>{{ viewing.ac }}</td><td>{{ viewing.initiative }}</td></tr>
+                </table>
+
+                <table>
+                <tr><th>Speed</th><th>Hit Point Maximum</th><th>Hit Dice</th></tr>
+                <tr><td>{{ viewing.speed }}</td><td>{{ viewing.hpmax }}</td><td>{{ viewing.hitdice }}</td></tr>
+                </table>
+    		</td>
+        	<td>
+		        <table>
+		            <tr><th>Class</th><th>Level</th><th>Background</th></tr>
+		            <tr><td>{{ viewing.charclass }}</td><td>{{ viewing.level }}</td><td>{{ viewing.background }}</td></tr>
+		        </table>
+			    <table>
+			        <tr><th>Race</th><th>Alignment</th><th>Experience Points</th></tr>
+			        <tr><td>{{ viewing.race }}</td><td>{{ viewing.alignment }}</td><td>{{ viewing.xp }}</td></tr>
+			    </table>
+			</td>
+	    </tr>
+	</table>
+
+    <table>
+        <tr><th>Strength (score)</th><th>Strength (modifier)</th></tr>
         <tr>
-            <td>{{ viewing.charclass }}</td><td>{{ viewing.level }}</td><td>{{ viewing.background }}</td>
+            <td>{{ strscore }}</td><td>{{ strmod }}</td>
+            <td>{{ strsave }}</td><td>Saving Throws</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ athletics }}</td><td>Athletics</td>
         </tr>
     </table>
 
     <table>
-        <tr><th>Race</th><th>Alignment</th><th>Experience Points</th></tr>
+        <tr><th>Dexterity (score)</th><th>Dexterity (modifier)</th></tr>
         <tr>
-            <td>{{ viewing.race }}</td><td>{{ viewing.alignment }}</td><td>{{ viewing.xp }}</td>
+            <td>{{ dexscore }}</td><td>{{ dexmod }}</td>
+            <td>{{ dexsave }}</td><td>Saving Throws</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ acrobatics }}</td><td>Acrobatics</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ sleight_of_hand }}</td><td>Sleight of Hand</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ stealth }}</td><td>Stealth</td>
         </tr>
     </table>
 
     <table>
-        <tr><th>Proficiency Bonus</th><th>Armor Class</th><th>Initiative</th></tr>
+        <tr><th>Constitution (score)</th><th>Constitution (modifier)</th></tr>
         <tr>
-            <td>{{ viewing.profbonus }}</td><td>{{ viewing.ac }}</td><td>{{ viewing.initiative }}</td>
+            <td>{{ conscore }}</td><td>{{ conmod }}</td>
+            <td>{{ consave }}</td><td>Saving Throws</td>
         </tr>
     </table>
 
     <table>
-        <tr><th>Speed</th><th>Hit Point Maximum</th><th>Hit Dice</th></tr>
+        <tr><th>Intelligence (score)</th><th>Intelligence (modifier)</th></tr>
         <tr>
-            <td>{{ viewing.speed }}</td><td>{{ viewing.hpmax }}</td><td>{{ viewing.hitdice }}</td>
+            <td>{{ intscore }}</td><td>{{ intmod }}</td>
+            <td>{{ intsave }}</td><td>Saving Throws</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ arcana }}</td><td>Arcana</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ history }}</td><td>History</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ investigation }}</td><td>Investigation</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ nature }}</td><td>Nature</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ religion }}</td><td>Religion</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr><th>Wisdom (score)</th><th>Wisdom (modifier)</th></tr>
+        <tr>
+            <td>{{ wisscore }}</td><td>{{ wismod }}</td>
+            <td>{{ wissave }}</td><td>Saving Throws</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ animal_handling }}</td><td>Animal Handling</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ insight }}</td><td>Insight</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ medicine }}</td><td>Medicine</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ perception }}</td><td>Perception</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ survival }}</td><td>Survival</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr><th>Charisma (score)</th><th>Charisma (modifier)</th></tr>
+        <tr>
+            <td>{{ chascore }}</td><td>{{ chamod }}</td>
+            <td>{{ chasave }}</td><td>Saving Throws</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ deception }}</td><td>Deception</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ intimidation }}</td><td>Intimidation</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ performance }}</td><td>Performance</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>{{ persuasion }}</td><td>Persuasion</td>
         </tr>
     </table>
 

@@ -918,7 +918,27 @@ def viewchar():
         # retrieve the desired character from the db
         char_to_view = Character.query.filter_by(id=view_id).first()
         if char_to_view is not None:
-            return render_template('viewchar.html', title='Character Details', viewing=char_to_view)
+            abil_scores = eval(char_to_view.abilityscores)
+            abil_mods = eval(char_to_view.abilitymods)
+            skill_mods = eval(char_to_view.skillmods)
+            save_mods = eval(char_to_view.savemods)
+            return render_template('viewchar.html', title='Character Details', viewing=char_to_view,
+                strscore=abil_scores['Strength'], strmod=abil_mods['Strength'], strsave=save_mods['Strength'],
+                athletics=skill_mods['Athletics'], dexscore=abil_scores['Dexterity'],
+                dexmod=abil_mods['Dexterity'], dexsave=save_mods['Dexterity'],
+                acrobatics=skill_mods['Acrobatics'], sleight_of_hand=skill_mods['Sleight of Hand'],
+                stealth=skill_mods['Stealth'], conscore=abil_scores['Constitution'],
+                conmod=abil_mods['Constitution'], consave=save_mods['Constitution'],
+                intscore=abil_scores['Intelligence'], intmod=abil_mods['Intelligence'],
+                intsave=save_mods['Intelligence'], arcana=skill_mods['Arcana'], history=skill_mods['History'],
+                investigation=skill_mods['Investigation'], nature=skill_mods['Nature'],
+                religion=skill_mods['Religion'], wisscore=abil_scores['Wisdom'], wismod=abil_mods['Wisdom'],
+                wissave=save_mods['Wisdom'], animal_handling=skill_mods['Animal Handling'],
+                insight=skill_mods['Insight'], medicine=skill_mods['Medicine'], perception=skill_mods['Perception'],
+                survival=skill_mods['Survival'], chascore=abil_scores['Charisma'], chamod=abil_mods['Charisma'],
+                chasave=save_mods['Charisma'], deception=skill_mods['Deception'],
+                intimidation=skill_mods['Intimidation'], performance=skill_mods['Performance'],
+                persuasion=skill_mods['Persuasion'])
     return render_template('viewchar.html', title='Character Details')
 
 @app.route('/editid', methods=['POST'])
@@ -929,7 +949,7 @@ def editid():
             session.pop('charIdToEdit')
         # save new character id in session
         session['charIdToEdit'] = int(request.data)
-        #print(session.get('charIdToView'))
+        #print(session.get('charIdToEdit'))
         return "success"
     return "failure"
 
