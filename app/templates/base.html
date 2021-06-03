@@ -127,8 +127,6 @@
         // Delete a character
         function deleteChar(charId) {
 
-            console.log(charId);
-
             var xhttp = new XMLHttpRequest();
             xhttp.open("POST", "/delete", true);
                
@@ -144,6 +142,30 @@
             xhttp.send(charId);
             let rowToHide = "row".concat(charId.toString());
             document.getElementById(rowToHide).style.display = "none";
+
+        }
+
+        // View a character
+        function viewChar(charId) {
+
+            let charIdSubstring = charId.substring(4)
+            let charIdInt = parseInt(charIdSubstring, 10)
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "/viewid", true);
+               
+            xhttp.onreadystatechange = function() {
+               if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                  console.log("finished");
+               } else {
+                  console.log(this.readyState);
+                  console.log(this.status);
+               }
+            }
+
+            xhttp.send(charIdInt);
+
+            window.location.replace("/viewchar");
 
         }
 

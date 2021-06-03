@@ -2,6 +2,38 @@
 
 {% block content %}
 
-    <h1>Viewing Character</h1>
+    {% if viewing %}
+
+    <h1>Viewing Character: {{ viewing.name }}, {{ viewing.chartype }}</h1>
+
+    <table>
+        <tr><th>Class</th><th>Level</th><th>Background</th></tr>
+        <tr>
+            <td>{{ viewing.charclass }}</td><td>{{ viewing.level }}</td><td>{{ viewing.background }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr><th>Race</th><th>Alignment</th><th>Experience Points</th></tr>
+        <tr>
+            <td>{{ viewing.race }}</td><td>{{ viewing.alignment }}</td><td>{{ viewing.xp }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr><th>Proficiency Bonus</th><th>Armor Class</th><th>Initiative</th></tr>
+        <tr>
+            <td>{{ viewing.profbonus }}</td><td>{{ viewing.ac }}</td><td>{{ viewing.initiative }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr><th>Speed</th><th>Hit Point Maximum</th><th>Hit Dice</th></tr>
+        <tr>
+            <td>{{ viewing.speed }}</td><td>{{ viewing.hpmax }}</td><td>{{ viewing.hitdice }}</td>
+        </tr>
+    </table>
+
+    {% endif %}
 
 {% endblock %}

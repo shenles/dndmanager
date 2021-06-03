@@ -29,11 +29,8 @@ def index():
 @app.route('/delete', methods=['POST'])
 def delete():
     if request:
-        #print(request.data, len(request.data))
         id_to_delete = int(request.data)
-        #print(id_to_delete)
         char_to_delete = Character.query.filter_by(id=id_to_delete).first()
-        #print(char_to_delete)
         db.session.delete(char_to_delete)
         db.session.commit()
         return "success"
@@ -773,8 +770,6 @@ def charcreated():
 
     ch_abilities = {'Strength': ch_stren, 'Dexterity': ch_dex, 'Constitution': ch_constn, 'Intelligence': ch_intell, 'Wisdom': ch_wis, 'Charisma': ch_cha}
     ch_abil_mods = {'Strength': abil_mods[0], 'Dexterity': abil_mods[1], 'Constitution': abil_mods[2], 'Intelligence': abil_mods[3], 'Wisdom': abil_mods[4], 'Charisma': abil_mods[5]}
-    #print(ch_abilities)
-    #print(ch_abil_mods)
 
     # determine darkvision based on race
     if ch_race in ['Human', 'Halfling', 'Dragonborn']:
@@ -841,12 +836,6 @@ def charcreated():
         ch_spellabil = None
         ch_spelldc = None
         ch_spellmod = None
-
-    #print(ch_hitdice)
-    #print(ch_darkvis, ch_size, ch_speed)
-    #print(ch_langs)
-    #print(ch_profs)
-    #print(ch_spellclass, ch_spellabil, ch_spelldc, ch_spellmod)
     
     # determine modifiers for skill checks and saving throws
     skill_list = ['Acrobatics', 'Animal Handling', 'Arcana', 'Athletics', 'Deception',
@@ -896,8 +885,6 @@ def charcreated():
             currsavemod = 0
         ch_save_mods[sv] = currsavemod
 
-    #print(ch_skill_mods)
-    #print(ch_save_mods)
     newchar = Character(name=ch_name, numsessions=0, chartype=ch_type, race=ch_race, subrace=ch_subrace,
         charclass=ch_class, level=ch_level, alignment=ch_align, background=ch_background, xp=0,
         profbonus=ch_pb, ac=ch_ac, initiative=ch_init, speed=ch_speed, size=ch_size, hpmax=ch_hpmax,
@@ -909,16 +896,50 @@ def charcreated():
     return render_template('charcreated.html', title='Create Character',
         msg1=congrats, msg2=ask)
 
-# user views details for their character
+@app.route('/viewid', methods=['POST'])
+def viewid():
+    if request:
+        # clear previously stored character id from session
+        if session.get('charIdToView'):
+            session.pop('charIdToView')
+        # save new character id in session
+        session['charIdToView'] = int(request.data)
+        #print(session.get('charIdToView'))
+        return "success"
+    return "failure"
+
+# user views details for one character
 @app.route('/viewchar', methods=['GET', 'POST'])
 @login_required
 def viewchar():
+    # get id for the character to be viewed
+    view_id = session.get('charIdToView')
+    if view_id is not None:
+        # retrieve the desired character from the db
+        char_to_view = Character.query.filter_by(id=view_id).first()
+        if char_to_view is not None:
+            return render_template('viewchar.html', title='Character Details', viewing=char_to_view)
     return render_template('viewchar.html', title='Character Details')
 
-# user edits details for their character
+@app.route('/editid', methods=['POST'])
+def editid():
+    if request:
+        # clear previously stored character id from session
+        if session.get('charIdToEdit'):
+            session.pop('charIdToEdit')
+        # save new character id in session
+        session['charIdToEdit'] = int(request.data)
+        #print(session.get('charIdToView'))
+        return "success"
+    return "failure"
+
+# user edits details for one character
 @app.route('/editchar', methods=['GET', 'POST'])
 @login_required
 def editchar():
+    # get id for the character to be edited
+    edit_id = session.get('charIdToEdit')
+    print(edit_id)
     return render_template('editchar.html', title='Edit Character')
 
 # user chooses languages for their character

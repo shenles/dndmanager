@@ -21,8 +21,12 @@
                 <td>{{ currentcharacter.profbonus }}</td><td>{{ currentcharacter.ac }}</td>
                 <td>{{ currentcharacter.initiative }}</td><td>{{ currentcharacter.speed }}</td>
                 <td>{{ currentcharacter.hpmax }}</td><td>{{ currentcharacter.hitdice }}</td>
-                <td><a href="{{ url_for('viewchar') }}">View</a></td>
-                <td><a href="{{ url_for('editchar') }}">Edit</a></td>
+                <td>
+                    <button type="button" id="view{{ currentcharacter.id }}" onclick="viewChar(this.id)">View</button>
+                </td>
+                <td>
+                    <button type="button" id="edit{{ currentcharacter.id }}">Edit</button>
+                </td>
                 <td>
                     <button type="button" id="{{ currentcharacter.id }}" onclick="deleteChar(this.id)">Delete</button>
                 </td>
