@@ -2,6 +2,10 @@
 
 {% block content %}
 
-    <h1>Edit Character</h1>
+    {% if the_char %}
+
+    <h1>Edit Character: {{ the_char.name }}</h1>
+
+    {% endif %}
 
 {% endblock %}

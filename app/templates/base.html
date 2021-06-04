@@ -103,10 +103,6 @@
                 data.append(dataId, scoresToAssign[i]);
             }
 
-            //for (var value of data.values()) {
-               //console.log(value); 
-            //}
-
             var xhttp = new XMLHttpRequest();
             xhttp.open("POST", "/ajax", true);
                
@@ -125,12 +121,12 @@
         }
 
         // Delete a character
-        function deleteChar(charId) {
+        function deleteChar(deleteCharId) {
 
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "/delete", true);
+            var xhttpdelete = new XMLHttpRequest();
+            xhttpdelete.open("POST", "/delete", true);
                
-            xhttp.onreadystatechange = function() {
+            xhttpdelete.onreadystatechange = function() {
                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                   console.log("finished");
                } else {
@@ -139,22 +135,24 @@
                }
             }
 
-            xhttp.send(charId);
-            let rowToHide = "row".concat(charId.toString());
+            xhttpdelete.send(deleteCharId);
+            let rowToHide = "row".concat(deleteCharId.toString());
             document.getElementById(rowToHide).style.display = "none";
 
         }
 
         // View a character
-        function viewChar(charId) {
+        function viewChar(viewCharId) {
 
-            let charIdSubstring = charId.substring(4)
-            let charIdInt = parseInt(charIdSubstring, 10)
+            console.log(viewCharId);
 
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "/viewid", true);
+            var viewCharIdSubstring = viewCharId.substring(4)
+            var viewCharIdInt = parseInt(viewCharIdSubstring, 10)
+
+            var xhttpview = new XMLHttpRequest();
+            xhttpview.open("POST", "/viewid", true);
                
-            xhttp.onreadystatechange = function() {
+            xhttpview.onreadystatechange = function() {
                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                   console.log("finished");
                } else {
@@ -163,9 +161,39 @@
                }
             }
 
-            xhttp.send(charIdInt);
+            xhttpview.send(viewCharIdInt);
 
-            window.location.replace("/viewchar");
+            setTimeout(function() {
+               window.location.replace("/viewchar");
+            }, 200);
+
+        }
+
+        // Edit a character
+        function editChar(editCharId) {
+
+            console.log(editCharId);
+
+            var editCharIdSubstring = editCharId.substring(4)
+            var editCharIdInt = parseInt(editCharIdSubstring, 10)
+
+            var xhttpedit = new XMLHttpRequest();
+            xhttpedit.open("POST", "/editid", true);
+               
+            xhttpedit.onreadystatechange = function() {
+               if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                  console.log("finished");
+               } else {
+                  console.log(this.readyState);
+                  console.log(this.status);
+               }
+            }
+
+            xhttpedit.send(editCharIdInt);
+
+            setTimeout(function() {
+               window.location.replace("/editchar");
+            }, 200);
 
         }
 

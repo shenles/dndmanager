@@ -899,12 +899,9 @@ def charcreated():
 @app.route('/viewid', methods=['POST'])
 def viewid():
     if request:
-        # clear previously stored character id from session
-        if session.get('charIdToView'):
-            session.pop('charIdToView')
         # save new character id in session
         session['charIdToView'] = int(request.data)
-        #print(session.get('charIdToView'))
+        #print('point A: viewid = ', session.get('charIdToView'))
         return "success"
     return "failure"
 
@@ -914,6 +911,7 @@ def viewid():
 def viewchar():
     # get id for the character to be viewed
     view_id = session.get('charIdToView')
+    #print(view_id)
     if view_id is not None:
         # retrieve the desired character from the db
         char_to_view = Character.query.filter_by(id=view_id).first()
@@ -944,12 +942,9 @@ def viewchar():
 @app.route('/editid', methods=['POST'])
 def editid():
     if request:
-        # clear previously stored character id from session
-        if session.get('charIdToEdit'):
-            session.pop('charIdToEdit')
         # save new character id in session
         session['charIdToEdit'] = int(request.data)
-        #print(session.get('charIdToEdit'))
+        #print('point C: editid = ', session.get('charIdToEdit'))
         return "success"
     return "failure"
 
@@ -959,7 +954,12 @@ def editid():
 def editchar():
     # get id for the character to be edited
     edit_id = session.get('charIdToEdit')
-    print(edit_id)
+    #print(edit_id)
+    if edit_id is not None:
+        char_to_edit = Character.query.filter_by(id=edit_id).first()
+        if char_to_edit is not None:
+            return render_template('editchar.html', title='Edit Character',
+                the_char=char_to_edit)
     return render_template('editchar.html', title='Edit Character')
 
 # user chooses languages for their character
